@@ -127,12 +127,12 @@ STATIC_URL = '/static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # File upload settings
-FILE_UPLOAD_TEMP_DIR = BASE_DIR / 'temp_uploads'
-FILE_UPLOAD_PERMISSIONS = 0o644
-FILE_UPLOAD_HANDLERS = [
-    'django.core.files.uploadhandler.MemoryFileUploadHandler',
-    'django.core.files.uploadhandler.TemporaryFileUploadHandler',
-]
+# FILE_UPLOAD_TEMP_DIR = BASE_DIR / 'temp_uploads'
+# FILE_UPLOAD_PERMISSIONS = 0o644
+# FILE_UPLOAD_HANDLERS = [
+#     'django.core.files.uploadhandler.MemoryFileUploadHandler',
+#     'django.core.files.uploadhandler.TemporaryFileUploadHandler',
+# ]
 
 # Custom user model
 AUTH_USER_MODEL = 'User.User'
