@@ -1,0 +1,93 @@
+.main-content {
+  padding: 20px;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.stat-done, .stat-upcoming, .stat-flwups {
+  flex: 1;
+  text-align: center;
+  margin: 0 10px;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.stat-done {
+  background-color: #2E8B57;
+  color: white;
+}
+
+.stat-upcoming {
+  background-color: #D0E8FF;
+  color: black;
+}
+
+.stat-flwups {
+  background-color: rgb(192, 192, 26);
+  color: black;
+}
+
+.calendar-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch; /* Ensure both calendar and stats stretch to the same height */
+  flex-grow: 1;
+}
+
+.react-calendar {
+  width: 40%; /* Adjusted width */
+  background-color: #fffaf0; /* Beige */
+  border: none;
+  border-radius: 5px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #333;
+}
+
+.selected-date-stats {
+  width: 60%; /* Adjusted width */
+  margin-left: 20px;
+  padding: 20px;
+  background-color: #2E8B57;
+  border-radius: 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center the content vertically */
+  font-size: 1.2rem; /* Increased font size */
+  font-weight: bold; /* Bold font */
+}
+
+/* Custom styles for the calendar */
+.react-calendar__tile {
+  background-color: #fff; /* White */
+  color: #333;
+  font-size: 1.5rem; /* Increased font size */
+  padding: 10px; /* Increased padding */
+}
+
+.react-calendar__tile--active {
+  background-color: #f5f5dc; /* Light beige */
+  color: #333;
+}
+
+.react-calendar__tile--now {
+  background-color: #ffebcd; /* Blanched almond */
+  color: #333;
+}
+
+.react-calendar__navigation button {
+  color: #2E8B57;
+  background-color: #fffaf0; /* Beige */
+}
+
+.react-calendar__navigation button:disabled {
+  background-color: #f0f0f0;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: #d9534f;
+}

@@ -1,0 +1,206 @@
+/* .patient-details-page {
+  padding: 20px;
+}
+
+.search-panel {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.search-panel input {
+  width: 50%;
+  padding: 12px;
+  border: 2px solid #2E8B57;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.patient-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.personal-info, .work-done, .medical-history {
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.dental-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dental-row {
+  display: flex;
+  gap: 5px;
+}
+
+.tooth {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #008080;
+  border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.filling {
+  background-color: yellow;
+}
+
+.extraction {
+  background-color: red;
+}
+
+.missing {
+  background-color: gray;
+}
+
+.treatment-section {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.treatment-box {
+  display: flex;
+  flex-direction: column;
+  background-color: #f4f4f4;
+  padding: 15px;
+  border-radius: 8px;
+  border: 2px solid #2E8B57;
+}
+
+.treatment-box label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #2E8B57;
+}
+
+.treatment-box select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+  resize: vertical;
+} */
+
+.patient-details-page {
+  padding: 20px;
+}
+
+.search-panel {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.search-panel input {
+  width: 50%;
+  padding: 12px;
+  border: 2px solid #2E8B57;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.patient-details {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.personal-info, .work-done, .medical-history {
+  background-color: #f4f4f4;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.dental-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dental-row {
+  display: flex;
+  gap: 5px;
+}
+
+.tooth {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #008080;
+  border-radius: 5px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.tooth img {
+  width: 100%;
+  height: 100%;
+}
+
+.filling {
+  background-color: yellow;
+}
+
+.extraction {
+  background-color: red;
+}
+
+.missing {
+  background-color: gray;
+}
+
+.treatment-section {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+.treatment-box {
+  display: flex;
+  flex-direction: column;
+  background-color: #f4f4f4;
+  padding: 15px;
+  border-radius: 8px;
+  border: 2px solid #2E8B57;
+}
+
+.treatment-box label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #2E8B57;
+}
+
+.treatment-box select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+textarea {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+  resize: vertical;
+}

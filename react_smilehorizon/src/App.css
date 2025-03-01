@@ -1,0 +1,320 @@
+* {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f4f4f4;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.page-content {
+  margin-left: 250px; /* Sidebar width */
+  padding: 2rem;
+  width: calc(100% - 250px); /* Adjust width considering sidebar width */
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  height: calc(100vh - 90px); /* Adjusting height considering navbar height */
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #2E8B57;
+  padding: 1rem 2rem;
+  color: white;
+}
+
+.navbar .logo {
+  display: flex;
+  align-items: center;
+}
+
+.navbar .logo img {
+  height: 40px;
+  margin-right: 1rem;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 250px;
+  background-color: #2E8B57;
+  height: 100vh;
+  padding-top: 2rem;
+  position: fixed;
+  overflow-y: auto;
+}
+
+.logo {
+  margin-bottom: 20px;
+  width: 100%;
+  text-align: center;
+}
+
+.logo img {
+  max-width: 100%;
+  height: auto;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  flex-grow: 1;
+}
+
+.sidebar ul li {
+  margin: 1.5rem 0;
+}
+
+.sidebar ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.2rem;
+  padding: 0.5rem 1rem;
+  display: block;
+}
+
+.sidebar ul li a:hover {
+  background-color: #237a73;
+  border-radius: 8px;
+}
+
+/* Home Page */
+.main-content h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.stat-done, .stat-upcoming, .stat-flwups {
+  flex: 1;
+  text-align: center;
+  margin: 0 10px;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.stat-done {
+  background-color: #2E8B57;
+  color: white;
+}
+
+.stat-upcoming {
+  background-color: #D0E8FF;
+  color: black;
+}
+
+.stat-flwups {
+  background-color: rgb(192, 192, 26);
+  color: black;
+}
+
+.calendar-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch; /* Ensure both calendar and stats stretch to the same height */
+  flex-grow: 1;
+}
+
+.react-calendar {
+  width: 40%; /* Adjusted width */
+  background-color: #fffaf0; /* Beige */
+  border: none;
+  border-radius: 5px;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #333;
+}
+
+.selected-date-stats {
+  width: 60%; /* Adjusted width */
+  margin-left: 20px;
+  padding: 20px;
+  background-color: #2E8B57;
+  border-radius: 5px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center the content vertically */
+}
+
+/* Custom styles for the calendar */
+.react-calendar__tile {
+  background-color: #fff; /* White */
+  color: #333;
+  font-size: 1.5rem; /* Increased font size */
+  padding: 10px; /* Increased padding */
+}
+
+.react-calendar__tile--active {
+  background-color: #f5f5dc; /* Light beige */
+  color: #333;
+}
+
+.react-calendar__tile--now {
+  background-color: #ffebcd; /* Blanched almond */
+  color: #333;
+}
+
+.react-calendar__navigation button {
+  color: #2E8B57;
+  background-color: #fffaf0; /* Beige */
+}
+
+.react-calendar__navigation button:disabled {
+  background-color: #f0f0f0;
+}
+
+.react-calendar__month-view__days__day--weekend {
+  color: #d9534f;
+}
+
+/* Search Panel */
+.search-panel {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.search-panel input {
+  width: 50%;
+  padding: 12px;
+  border: 2px solid #2E8B57;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Selected Patient Name */
+.selected-patient {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  background-color: #2E8B57;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+/* Patient Details Section */
+.patient-details-page {
+  padding: 20px;
+}
+
+.search-panel input {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+.patient-details {
+  flex-wrap: wrap;
+  gap: 10px; 
+  display: flex;
+  justify-content: space-between;
+}
+
+.personal-info, .medical-history {
+  width: 45%;
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.dental-chart {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.dental-row {
+  display: flex;
+  gap: 5px; /* Space between teeth */
+}
+
+.tooth {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #008080;
+  border-radius: 5px;
+  background-color: white;
+}
+.filling {
+  background-color: yellow;
+}
+.extraction {
+  background-color: red;
+}
+.missing {
+  background-color: gray;
+}
+
+/* Ensure new screens use the same layout */
+.page-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 20px;
+}
+
+.hidden {
+  display: none;
+}
+
+.treatment-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Two columns */
+  gap: 20px; /* Space between boxes */
+  margin-top: 20px;
+}
+
+.treatment-box {
+  display: flex;
+  flex-direction: column;
+  background-color: #f4f4f4;
+  padding: 15px;
+  border-radius: 8px;
+  border: 2px solid #2E8B57;
+}
+
+.treatment-box label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #2E8B57;
+}
+
+.treatment-box textarea {
+  width: 100%;
+  min-height: 80px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+  resize: vertical;
+}
