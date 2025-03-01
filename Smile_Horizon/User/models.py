@@ -4,11 +4,11 @@ from django.db import models
 
 class User(AbstractUser):
     """
-    Extended User model to handle both patients and doctors
+    Extended User model to handle both doctors and staff
     """
     ROLE_CHOICES = (
         ('DOCTOR', 'Doctor'),
-        ('PATIENT', 'Patient'),
+        ('STAFF', 'Staff'),
     )
     
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
@@ -19,3 +19,8 @@ class User(AbstractUser):
     phone_number = models.CharField(validators=[phone_regex], max_length=17, blank=True)
     address = models.TextField(blank=True)
     date_of_birth = models.DateField(null=True, blank=True)
+    profile_pic = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
+    specialization = models.CharField(max_length=100, blank=True)  # For doctors
+    
+    def __str__(self):
+        return f"Dr. {self.first_name} {self.last_name}" if self.role == 'DOCTOR' else f"{self.first_name} {self.last_name}"
