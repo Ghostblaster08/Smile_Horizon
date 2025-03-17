@@ -72,7 +72,7 @@ const PatientDetails = () => {
                   className={`tooth ${status}`}
                   onClick={() => handleToothClick(index)}
                 >
-                  <img src={`/teeth/${status || 'normal'}.svg`} alt={`Tooth ${index + 1}`} />
+                  <img src={`/teeth.png`} alt={`Tooth ${index + 1}`} />
                 </div>
               ))}
             </div>
@@ -83,7 +83,7 @@ const PatientDetails = () => {
                   className={`tooth ${status}`}
                   onClick={() => handleToothClick(index + 16)}
                 >
-                  <img src={`/teeth/${status || 'normal'}.svg`} alt={`Tooth ${index + 17}`} />
+                  <img src={`/teeth.png`} alt={`Tooth ${index + 17}`} />
                 </div>
               ))}
             </div>
