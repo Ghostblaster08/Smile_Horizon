@@ -7,7 +7,6 @@ from .forms import AppointmentForm, TreatmentRecordForm
 from Patient.models import Patient
 from User.models import User
 
-@login_required
 def appointment_list(request):
     # Get the selected date from the query parameters or default to today
     selected_date_str = request.GET.get('date', date.today().strftime('%Y-%m-%d'))
@@ -28,7 +27,7 @@ def appointment_list(request):
     
     return render(request, 'appointment/appointment_list.html', context)
 
-@login_required
+
 def appointment_create(request):
     # Get patient_id from query parameters if coming from patient detail page
     patient_id = request.GET.get('patient_id', None)
@@ -61,7 +60,6 @@ def appointment_create(request):
     
     return render(request, 'appointment/appointment_form.html', context)
 
-@login_required
 def appointment_update(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
     
@@ -82,7 +80,6 @@ def appointment_update(request, pk):
     
     return render(request, 'appointment/appointment_form.html', context)
 
-@login_required
 def appointment_check_in(request, pk):
     appointment = get_object_or_404(Appointment, pk=pk)
     appointment.status = 'CHECKED_IN'
@@ -90,7 +87,7 @@ def appointment_check_in(request, pk):
     messages.success(request, f'Patient {appointment.patient} checked in successfully')
     return redirect('appointment_list') + f'?date={appointment.appointment_date}'
 
-@login_required
+
 def treatment_record_create(request, appointment_pk):
     appointment = get_object_or_404(Appointment, pk=appointment_pk)
     

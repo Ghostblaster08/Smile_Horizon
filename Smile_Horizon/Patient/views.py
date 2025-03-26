@@ -4,7 +4,7 @@ from django.db.models import Q
 from .models import Patient, MedicalHistory, Medication, Document
 from .forms import PatientForm, MedicalHistoryForm, MedicationForm, DocumentForm
 
-@login_required
+
 def patient_list(request):
     search_query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
@@ -31,7 +31,7 @@ def patient_list(request):
     
     return render(request, 'patient/patient_list.html', context)
 
-@login_required
+
 def patient_detail(request, pk):
     patient = get_object_or_404(Patient, pk=pk)
     medical_histories = patient.medical_histories.all()
@@ -53,7 +53,6 @@ def patient_detail(request, pk):
     
     return render(request, 'patient/patient_detail.html', context)
 
-@login_required
 def patient_create(request):
     if request.method == 'POST':
         form = PatientForm(request.POST)
@@ -65,7 +64,7 @@ def patient_create(request):
     
     return render(request, 'patient/patient_form.html', {'form': form, 'title': 'Add New Patient'})
 
-@login_required
+
 def patient_update(request, pk):
     patient = get_object_or_404(Patient, pk=pk)
     
