@@ -58,6 +58,12 @@ def patient_create(request):
         form = PatientForm(request.POST)
         if form.is_valid():
             patient = form.save()
+            # Verify the patient exists in the database
+            test_patient = Patient.objects.filter(id=patient.id).first()
+            if test_patient:
+                print(f"Patient saved successfully with ID: {test_patient.id}")
+            else:
+                print("Patient was not saved to database!")
             return redirect('patient_detail', pk=patient.pk)
     else:
         form = PatientForm()
