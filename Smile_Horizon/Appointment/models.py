@@ -1,15 +1,13 @@
 from django.db import models
-from User.models import User
 from Patient.models import Patient
+from User.models import User  # Keep this for any future references, but it's no longer necessary for the `doctor` field
 
 class TreatmentType(models.Model):
-    """
-    Types of dental treatments offered
-    """
+    # TreatmentType model remains unchanged
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    average_duration = models.DurationField(null=True, blank=True)  # Average time required
-    
+    average_duration = models.DurationField(null=True, blank=True)
+
     def __str__(self):
         return self.name
     
@@ -28,7 +26,6 @@ class Appointment(models.Model):
     )
     
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='appointments')
-    doctor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='doctor_appointments')
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
     treatment_type = models.ForeignKey(TreatmentType, on_delete=models.SET_NULL, null=True, related_name='appointments')

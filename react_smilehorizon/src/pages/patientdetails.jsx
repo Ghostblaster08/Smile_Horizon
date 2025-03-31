@@ -1,43 +1,112 @@
 import React, { useState, useEffect } from "react";
-import './patientdetails.css'; // Create a new CSS file for patient details
+import axios from "axios";
+import "./patientdetails.css"; // Create or modify patientdetails.css as needed
+
+const API_URL = "http://localhost:8000/api/patients/"; // Update with your backend URL
 
 const PatientDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [teethStatus, setTeethStatus] = useState(Array(32).fill("normal"));
+  const [selectedTooth, setSelectedTooth] = useState(null);
+
   const [prescription, setPrescription] = useState("");
   const [workDone, setWorkDone] = useState("");
   const [pendingWork, setPendingWork] = useState("");
   const [postMedication, setPostMedication] = useState("");
   const [currentMedications, setCurrentMedications] = useState("");
-  const [teethStatus, setTeethStatus] = useState(Array(32).fill(""));
-  const [selectedTooth, setSelectedTooth] = useState(null); // Track selected tooth
 
-  const handleToothClick = (index) => {
-    setSelectedTooth(index);
-  };
+  // Fetch patients from API
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const response = await axios.get(API_URL);
+        setPatients(response.data);
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+      }
+    };
 
-  const handleStatusChange = (status) => {
-    const updatedTeethStatus = [...teethStatus];
-    updatedTeethStatus[selectedTooth] = status;
-    setTeethStatus(updatedTeethStatus);
-  };
+    fetchPatients();
+  }, []);
 
-  // Sample Patient Data
-  const patients = [
-    { name: "John Doe", age: 32, gender: "Male", contact: "1234567890", email: "john@example.com", bloodGroup: "O+", allergies: "None", condition: "Healthy", occupation: "Engineer" },
-    { name: "Jane Smith", age: 28, gender: "Female", contact: "9876543210", email: "jane@example.com", bloodGroup: "A+", allergies: "Penicillin", condition: "Mild infection", occupation: "Teacher" }
-  ];
-
+  // Fetch selected patient's details and teeth status
   useEffect(() => {
     if (searchTerm) {
       const filteredPatients = patients.filter((patient) =>
-        patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+        patient.first_name.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      setSelectedPatient(filteredPatients[0]);
+      if (filteredPatients.length > 0) {
+        setSelectedPatient(filteredPatients[0]);
+        fetchTeethStatus(filteredPatients[0].id);
+      } else {
+        setSelectedPatient(null);
+      }
     } else {
       setSelectedPatient(null);
     }
   }, [searchTerm, patients]);
+
+  // Fetch teeth status dynamically from API
+  const fetchTeethStatus = async (patientId) => {
+    try {
+      const response = await axios.get(`${API_URL}${patientId}/teeth-status/`);
+      const teethData = Array(32).fill("normal");
+
+      response.data.forEach((tooth) => {
+        teethData[tooth.tooth_number - 1] = tooth.status;
+      });
+      setTeethStatus(teethData);
+    } catch (error) {
+      console.error("Error fetching teeth status:", error);
+    }
+  };
+
+  // Handle tooth selection and status update
+  const handleToothClick = (index) => {
+    setSelectedTooth(index);
+  };
+
+  const handleStatusChange = async (status) => {
+    const updatedTeethStatus = [...teethStatus];
+    updatedTeethStatus[selectedTooth] = status;
+    setTeethStatus(updatedTeethStatus);
+
+    if (selectedPatient) {
+      try {
+        await axios.post(`${API_URL}${selectedPatient.id}/update-teeth/`, {
+          tooth_number: selectedTooth + 1,
+          status: status,
+        });
+      } catch (error) {
+        console.error("Error updating tooth status:", error);
+      }
+    }
+  };
+
+  // Handle submission of work and medications
+  const handleSubmit = async () => {
+    if (!selectedPatient) {
+      alert("Please select a patient first!");
+      return;
+    }
+
+    try {
+      await axios.post(`${API_URL}${selectedPatient.id}/update-details/`, {
+        prescription,
+        work_done: workDone,
+        pending_work: pendingWork,
+        post_medication: postMedication,
+        current_medications: currentMedications,
+      });
+
+      alert("Patient details updated successfully!");
+    } catch (error) {
+      console.error("Error updating details:", error);
+      alert("Failed to update patient details.");
+    }
+  };
 
   return (
     <div className="patient-details-page">
@@ -49,20 +118,21 @@ const PatientDetails = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+
       {selectedPatient && (
         <div className="patient-details">
           <div className="personal-info">
             <h2>Personal Information</h2>
-            <p>Name: {selectedPatient.name}</p>
+            <p>Name: {selectedPatient.first_name} {selectedPatient.last_name}</p>
             <p>Age: {selectedPatient.age}</p>
             <p>Gender: {selectedPatient.gender}</p>
-            <p>Contact: {selectedPatient.contact}</p>
+            <p>Contact: {selectedPatient.contact_number}</p>
             <p>Email: {selectedPatient.email}</p>
-            <p>Blood Group: {selectedPatient.bloodGroup}</p>
-            <p>Allergies: {selectedPatient.allergies}</p>
-            <p>Condition: {selectedPatient.condition}</p>
-            <p>Occupation: {selectedPatient.occupation}</p>
+            <p>Blood Group: {selectedPatient.blood_group}</p>
+            <p>Allergies: {selectedPatient.allergies || "None"}</p>
+            <p>Conditions: {selectedPatient.existing_conditions || "Healthy"}</p>
           </div>
+
           <div className="dental-chart">
             <h2>Dental Chart</h2>
             <div className="dental-row">
@@ -72,7 +142,10 @@ const PatientDetails = () => {
                   className={`tooth ${status}`}
                   onClick={() => handleToothClick(index)}
                 >
-                  <img src={`/teeth/${status || 'normal'}.svg`} alt={`Tooth ${index + 1}`} />
+                  <img
+                    src={`/teeth/${status || "normal"}.svg`}
+                    alt={`Tooth ${index + 1}`}
+                  />
                 </div>
               ))}
             </div>
@@ -83,21 +156,25 @@ const PatientDetails = () => {
                   className={`tooth ${status}`}
                   onClick={() => handleToothClick(index + 16)}
                 >
-                  <img src={`/teeth/${status || 'normal'}.svg`} alt={`Tooth ${index + 17}`} />
+                  <img
+                    src={`/teeth/${status || "normal"}.svg`}
+                    alt={`Tooth ${index + 17}`}
+                  />
                 </div>
               ))}
             </div>
           </div>
+
           {selectedTooth !== null && (
             <div className="treatment-section">
               <div className="treatment-box">
-                <label htmlFor="status">Status</label>
+                <label htmlFor="status">Tooth Status:</label>
                 <select
                   id="status"
                   value={teethStatus[selectedTooth]}
                   onChange={(e) => handleStatusChange(e.target.value)}
                 >
-                  <option value="">Select Status</option>
+                  <option value="normal">Normal</option>
                   <option value="filling">Filling</option>
                   <option value="extraction">Extraction</option>
                   <option value="missing">Missing</option>
@@ -105,8 +182,9 @@ const PatientDetails = () => {
               </div>
             </div>
           )}
+
           <div className="work-done">
-            <h2>Work Done</h2>
+            <h2>Work Done & Medications</h2>
             <textarea
               value={prescription}
               onChange={(e) => setPrescription(e.target.value)}
@@ -120,11 +198,12 @@ const PatientDetails = () => {
             <textarea
               value={pendingWork}
               onChange={(e) => setPendingWork(e.target.value)}
-              placeholder="What has to be done"
+              placeholder="What needs to be done"
             />
           </div>
+
           <div className="medical-history">
-            <h2>Medical History and Past Treatments</h2>
+            <h2>Medical History & Current Medications</h2>
             <textarea
               value={postMedication}
               onChange={(e) => setPostMedication(e.target.value)}
@@ -136,6 +215,10 @@ const PatientDetails = () => {
               placeholder="Current Medications"
             />
           </div>
+
+          <button onClick={handleSubmit} className="submit-btn">
+            Save Details
+          </button>
         </div>
       )}
     </div>

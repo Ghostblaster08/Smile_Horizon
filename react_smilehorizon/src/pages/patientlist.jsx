@@ -1,50 +1,124 @@
-import React, { useState } from "react";
-import './patientlist.css'; // Import the new CSS file
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import "./patientlist.css"; // Import CSS for styling
+
+const API_URL = "http://127.0.0.1:8000/api/patients/"; // Update if necessary
 
 const PatientList = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [patients, setPatients] = useState([
-    { id: 1, name: "John Doe", age: 32, contact: "1234567890" },
-    { id: 2, name: "Jane Smith", age: 28, contact: "9876543210" },
-    { id: 3, name: "Alice Johnson", age: 45, contact: "4567890123" },
-  ]);
-  const [newPatient, setNewPatient] = useState({ name: "", age: "", contact: "" });
+  const [patients, setPatients] = useState([]);
+  const [newPatient, setNewPatient] = useState({
+    first_name: "",
+    last_name: "",
+    age: "",
+    contact_number: "",
+    gender: "", // Add gender to the state
+  });
   const [editingPatient, setEditingPatient] = useState(null);
 
+  // Fetch patients from backend
+  const fetchPatients = async () => {
+    try {
+      const response = await axios.get(API_URL, {
+        params: { search: searchTerm },
+      });
+      setPatients(response.data);
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchPatients();
+  }, [searchTerm]);
+
+  // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewPatient({ ...newPatient, [name]: value });
   };
 
-  const handleAddPatient = (e) => {
+  // Add a new patient
+  const handleAddPatient = async (e) => {
     e.preventDefault();
-    if (!newPatient.name || !newPatient.age || !newPatient.contact) {
-      alert("Please fill all fields.");
+    if (!newPatient.first_name || !newPatient.age || !newPatient.contact_number || !newPatient.gender) {
+      alert("Please fill in all required fields.");
       return;
     }
 
-    setPatients([...patients, { id: Date.now(), ...newPatient }]);
-    setNewPatient({ name: "", age: "", contact: "" });
+    try {
+      const response = await axios.post(API_URL, newPatient);
+      setPatients([...patients, response.data]);
+      setNewPatient({
+        first_name: "",
+        last_name: "",
+        age: "",
+        contact_number: "",
+        gender: "", // Reset gender
+      });
+    } catch (error) {
+      console.error("Error adding patient:", error.response?.data || error.message);
+    }
   };
 
+  // Edit patient
   const handleEditPatient = (patient) => {
     setEditingPatient(patient);
-    setNewPatient(patient);
+    setNewPatient({
+      first_name: patient.first_name,
+      last_name: patient.last_name || "",
+      age: patient.age,
+      contact_number: patient.contact_number,
+      gender: patient.gender || "", // Set the gender from patient data
+    });
   };
 
-  const handleUpdatePatient = (e) => {
+  // Update patient
+  const handleUpdatePatient = async (e) => {
     e.preventDefault();
-    setPatients(patients.map((patient) => (patient.id === editingPatient.id ? newPatient : patient)));
-    setEditingPatient(null);
-    setNewPatient({ name: "", age: "", contact: "" });
+    if (!newPatient.first_name || !newPatient.age || !newPatient.contact_number || !newPatient.gender) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    try {
+      await axios.put(`${API_URL}${editingPatient.id}/`, newPatient);
+      setPatients(
+        patients.map((patient) =>
+          patient.id === editingPatient.id
+            ? { ...newPatient, id: editingPatient.id }
+            : patient
+        )
+      );
+      setEditingPatient(null);
+      setNewPatient({
+        first_name: "",
+        last_name: "",
+        age: "",
+        contact_number: "",
+        gender: "", // Reset gender
+      });
+    } catch (error) {
+      console.error("Error updating patient:", error.response?.data || error.message);
+    }
   };
 
-  const handleDeletePatient = (id) => {
-    setPatients(patients.filter((patient) => patient.id !== id));
+  // Delete patient
+  const handleDeletePatient = async (id) => {
+    try {
+      await axios.delete(`${API_URL}${id}/`);
+      setPatients(patients.filter((patient) => patient.id !== id));
+    } catch (error) {
+      console.error("Error deleting patient:", error.response?.data || error.message);
+    }
   };
 
-  const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+  // Filter patients by search term (first name + last name)
+  const filteredPatients = patients.filter(
+    (patient) =>
+      `${patient.first_name} ${patient.last_name}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -61,12 +135,22 @@ const PatientList = () => {
       />
 
       {/* Patient Form */}
-      <form onSubmit={editingPatient ? handleUpdatePatient : handleAddPatient} className="patient-form">
+      <form
+        onSubmit={editingPatient ? handleUpdatePatient : handleAddPatient}
+        className="patient-form"
+      >
         <input
           type="text"
-          name="name"
-          placeholder="Patient Name"
-          value={newPatient.name}
+          name="first_name"
+          placeholder="First Name"
+          value={newPatient.first_name}
+          onChange={handleInputChange}
+        />
+        <input
+          type="text"
+          name="last_name"
+          placeholder="Last Name"
+          value={newPatient.last_name}
           onChange={handleInputChange}
         />
         <input
@@ -78,21 +162,39 @@ const PatientList = () => {
         />
         <input
           type="text"
-          name="contact"
-          placeholder="Contact"
-          value={newPatient.contact}
+          name="contact_number"
+          placeholder="Contact Number"
+          value={newPatient.contact_number}
           onChange={handleInputChange}
         />
-        <button type="submit">{editingPatient ? "Update Patient" : "Add Patient"}</button>
+
+        {/* Gender Dropdown */}
+        <select
+          name="gender"
+          value={newPatient.gender}
+          onChange={handleInputChange}
+          className="gender-select"
+        >
+          <option value="">Select Gender</option>
+          <option value="M">Male</option>
+          <option value="F">Female</option>
+          <option value="O">Other</option>
+        </select>
+
+        <button type="submit">
+          {editingPatient ? "Update Patient" : "Add Patient"}
+        </button>
       </form>
 
       {/* Patient List */}
       <table className="patient-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>First Name</th>
+            <th>Last Name</th>
             <th>Age</th>
-            <th>Contact</th>
+            <th>Gender</th>
+            <th>Contact Number</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -100,14 +202,22 @@ const PatientList = () => {
           {filteredPatients.length ? (
             filteredPatients.map((patient) => (
               <tr key={patient.id}>
-                <td>{patient.name}</td>
+                <td>{patient.first_name}</td>
+                <td>{patient.last_name}</td>
                 <td>{patient.age}</td>
-                <td>{patient.contact}</td>
+                <td>{patient.gender}</td>
+                <td>{patient.contact_number}</td>
                 <td>
-                  <button onClick={() => handleEditPatient(patient)} className="edit-btn">
+                  <button
+                    onClick={() => handleEditPatient(patient)}
+                    className="edit-btn"
+                  >
                     Edit
                   </button>
-                  <button onClick={() => handleDeletePatient(patient.id)} className="delete-btn">
+                  <button
+                    onClick={() => handleDeletePatient(patient.id)}
+                    className="delete-btn"
+                  >
                     Delete
                   </button>
                 </td>
@@ -115,7 +225,7 @@ const PatientList = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="4">No patients found.</td>
+              <td colSpan="5">No patients found.</td>
             </tr>
           )}
         </tbody>
