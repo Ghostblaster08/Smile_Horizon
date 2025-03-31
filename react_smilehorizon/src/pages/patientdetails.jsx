@@ -113,6 +113,7 @@ const PatientDetails = () => {
                   className={`tooth ${status}`}
                   onClick={() => handleToothClick(index)}
                 >
+
                   <img src={`/teeth/${status || "normal"}.svg`} alt={`Tooth ${index + 1}`} />
                 </div>
               ))}
@@ -124,6 +125,7 @@ const PatientDetails = () => {
                   className={`tooth ${status}`}
                   onClick={() => handleToothClick(index + 16)}
                 >
+
                   <img src={`/teeth/${status || "normal"}.svg`} alt={`Tooth ${index + 17}`} />
                 </div>
               ))}
