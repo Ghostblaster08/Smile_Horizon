@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 * {
   font-family: 'Roboto', sans-serif;
   margin: 0;
@@ -14,24 +18,29 @@ html, body {
 
 .app-container {
   display: flex;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
+  min-height: 100vh;
+}
+
+.content-wrapper {
+  flex: 1;
+  margin-left: 250px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
 }
 
 .main-content {
   display: flex;
-  flex: 1;
-  overflow: hidden;
+  width: 100%;
 }
 
 .page-content {
   margin-left: 250px; /* Sidebar width */
-  padding: 2rem;
+  padding: 20px;
   width: calc(100% - 250px); /* Adjust width considering sidebar width */
-  overflow-y: auto;
   background-color: #f8f9fa;
-  height: calc(100vh - 90px); /* Adjusting height considering navbar height */
+  flex: 1;
+  height: 100vh;
 }
 
 /* Navbar */
@@ -58,10 +67,12 @@ html, body {
 .sidebar {
   width: 250px;
   background-color: #2E8B57;
+  position: fixed;
+  top: 0;
+  left: 0;
   height: 100vh;
   padding-top: 2rem;
-  position: fixed;
-  overflow-y: auto;
+  z-index: 100;
 }
 
 .logo {

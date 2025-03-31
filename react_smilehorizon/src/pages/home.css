@@ -1,93 +1,62 @@
-.main-content {
-  padding: 20px;
-}
-
-.stats {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.stat-done, .stat-upcoming, .stat-flwups {
-  flex: 1;
-  text-align: center;
-  margin: 0 10px;
-  padding: 20px;
-  border-radius: 5px;
-}
-
-.stat-done {
-  background-color: #2E8B57;
-  color: white;
-}
-
-.stat-upcoming {
-  background-color: #D0E8FF;
-  color: black;
-}
-
-.stat-flwups {
-  background-color: rgb(192, 192, 26);
-  color: black;
-}
-
-.calendar-stats {
-  display: flex;
-  justify-content: space-between;
-  align-items: stretch; /* Ensure both calendar and stats stretch to the same height */
-  flex-grow: 1;
-}
-
-.react-calendar {
-  width: 40%; /* Adjusted width */
-  background-color: #fffaf0; /* Beige */
-  border: none;
-  border-radius: 5px;
-  font-family: Arial, Helvetica, sans-serif;
-  color: #333;
-}
-
-.selected-date-stats {
-  width: 60%; /* Adjusted width */
-  margin-left: 20px;
-  padding: 20px;
-  background-color: #2E8B57;
-  border-radius: 5px;
-  text-align: center;
+.greeting-container {
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center the content vertically */
-  font-size: 1.2rem; /* Increased font size */
-  font-weight: bold; /* Bold font */
+  align-items: center;
+  justify-content: center;
+  height: 70vh; /* Increase height to cover most of the viewport */
+  text-align: center;
+  margin-left: 250px; /* Offset for the left navbar */
 }
 
-/* Custom styles for the calendar */
-.react-calendar__tile {
-  background-color: #fff; /* White */
-  color: #333;
-  font-size: 1.5rem; /* Increased font size */
-  padding: 10px; /* Increased padding */
+.greeting {
+  color: #000000; /* Match the theme color */
+  margin-bottom: 30px; /* Add spacing below the message */
+  
+  h1{
+    font-size: 3rem; /* Increase font size */
+  }
 }
 
-.react-calendar__tile--active {
-  background-color: #f5f5dc; /* Light beige */
-  color: #333;
+/* Style the scroll button */
+.scroll-button {
+  padding: 15px 30px; /* Larger button size */
+  font-size: 1.5rem; /* Bigger font size for the button */
+  font-weight: bold;
+  color: white;
+  background-color: #2E8B57;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
-.react-calendar__tile--now {
-  background-color: #ffebcd; /* Blanched almond */
-  color: #333;
+.scroll-button:hover {
+  background-color: #1e6b43;
 }
 
-.react-calendar__navigation button {
-  color: #2E8B57;
-  background-color: #fffaf0; /* Beige */
+/* Enable smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
 }
 
-.react-calendar__navigation button:disabled {
-  background-color: #f0f0f0;
+/* Ensure the main content spans the full page */
+.main-content {
+  position: relative;
+  width: 100%;
+  min-height: 100vh; /* Ensure it takes the full viewport height */
+  overflow: visible; /* Allow full-page scrolling */
 }
 
-.react-calendar__month-view__days__day--weekend {
-  color: #d9534f;
+/* Ensure the body allows scrolling */
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Style the stats section */
+.stats {
+  margin-top: 50px; /* Add spacing from the top */
+  padding: 20px;
+  width: 100%;
 }

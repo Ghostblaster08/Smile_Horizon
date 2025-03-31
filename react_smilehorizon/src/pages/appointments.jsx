@@ -1,68 +1,45 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "./appointments.css"; // Ensure this CSS file styles your component
-
-const API_URL = "http://localhost:8000/appointments/"; // Adjust this if needed
+import React, { useState } from "react";
+import './appointments.css'; // Create a new CSS file for appointments
 
 const Appointments = () => {
-  const [appointments, setAppointments] = useState([]);
+  const [appointments, setAppointments] = useState([
+    { id: 1, patientName: "John Doe", date: "2025-03-01", time: "10:00 AM", purpose: "Routine Checkup" },
+    { id: 2, patientName: "Jane Smith", date: "2025-03-02", time: "02:30 PM", purpose: "Filling" },
+  ]);
   const [searchTerm, setSearchTerm] = useState("");
   const [newAppointment, setNewAppointment] = useState({
-    patient: "",
-    appointment_date: "",
-    appointment_time: "",
+    patientName: "",
+    date: "",
+    time: "",
     purpose: "",
   });
 
-  // Fetch appointments from Django backend
-  useEffect(() => {
-    axios
-      .get(API_URL, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }, // If using authentication
-      })
-      .then((response) => setAppointments(response.data))
-      .catch((error) => console.error("Error fetching appointments:", error));
-  }, []);
-
-  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewAppointment({ ...newAppointment, [name]: value });
   };
 
-  // Add appointment to the backend
   const handleAddAppointment = (e) => {
     e.preventDefault();
-
-    if (!newAppointment.patient || !newAppointment.appointment_date || !newAppointment.appointment_time || !newAppointment.purpose) {
+    if (!newAppointment.patientName || !newAppointment.date || !newAppointment.time || !newAppointment.purpose) {
       alert("Please fill all fields.");
       return;
     }
 
-    axios
-      .post(API_URL, newAppointment, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then((response) => {
-        setAppointments([...appointments, response.data]);
-        setNewAppointment({ patient: "", appointment_date: "", appointment_time: "", purpose: "" });
-      })
-      .catch((error) => console.error("Error adding appointment:", error));
+    setAppointments([
+      ...appointments,
+      { id: Date.now(), ...newAppointment },
+    ]);
+    setNewAppointment({ patientName: "", date: "", time: "", purpose: "" });
   };
 
-  // Delete appointment from the backend
   const handleDelete = (id) => {
-    axios
-      .delete(`${API_URL}${id}/`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then(() => setAppointments(appointments.filter((appt) => appt.id !== id)))
-      .catch((error) => console.error("Error deleting appointment:", error));
+    const updatedAppointments = appointments.filter((appt) => appt.id !== id);
+    setAppointments(updatedAppointments);
   };
 
-  // Filter appointments based on search term
   const filteredAppointments = appointments.filter((appt) =>
-    appt.patient.first_name.toLowerCase().includes(searchTerm.toLowerCase())
+    appt.patientName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -82,21 +59,21 @@ const Appointments = () => {
       <form onSubmit={handleAddAppointment} className="appointment-form">
         <input
           type="text"
-          name="patient"
-          placeholder="Patient ID"
-          value={newAppointment.patient}
+          name="patientName"
+          placeholder="Patient Name"
+          value={newAppointment.patientName}
           onChange={handleInputChange}
         />
         <input
           type="date"
-          name="appointment_date"
-          value={newAppointment.appointment_date}
+          name="date"
+          value={newAppointment.date}
           onChange={handleInputChange}
         />
         <input
           type="time"
-          name="appointment_time"
-          value={newAppointment.appointment_time}
+          name="time"
+          value={newAppointment.time}
           onChange={handleInputChange}
         />
         <input
@@ -115,7 +92,7 @@ const Appointments = () => {
           filteredAppointments.map((appt) => (
             <li key={appt.id} className="appointment-item">
               <div>
-                <strong>{appt.patient.first_name} {appt.patient.last_name}</strong> — {appt.appointment_date} at {appt.appointment_time}  
+                <strong>{appt.patientName}</strong> — {appt.date} at {appt.time}  
                 <br />
                 Purpose: {appt.purpose}
               </div>
