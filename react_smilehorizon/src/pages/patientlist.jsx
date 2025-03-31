@@ -21,8 +21,6 @@ const PatientList = () => {
   const [editingPatient, setEditingPatient] = useState(null);
 
   const API_URL = "http://127.0.0.1:8000/api/patients/"; // Update this if needed
-  const headers = { Authorization: `Bearer ${localStorage.getItem("token")}` }; // If using JWT authentication
-
   // Fetch patients from backend
   useEffect(() => {
     axios
