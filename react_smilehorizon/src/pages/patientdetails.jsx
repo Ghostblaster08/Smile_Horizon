@@ -1,16 +1,50 @@
 import React, { useState, useEffect } from "react";
-import './patientdetails.css'; // Create a new CSS file for patient details
+import axios from "axios";
+import "./patientdetails.css"; // Ensure this CSS file is properly linked
+
+const API_URL = "http://localhost:8000/patients/"; // Adjust based on your Django API
 
 const PatientDetails = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [patients, setPatients] = useState([]);
   const [prescription, setPrescription] = useState("");
   const [workDone, setWorkDone] = useState("");
   const [pendingWork, setPendingWork] = useState("");
   const [postMedication, setPostMedication] = useState("");
   const [currentMedications, setCurrentMedications] = useState("");
   const [teethStatus, setTeethStatus] = useState(Array(32).fill(""));
-  const [selectedTooth, setSelectedTooth] = useState(null); // Track selected tooth
+  const [selectedTooth, setSelectedTooth] = useState(null);
+
+  // Fetch patients from the backend
+  useEffect(() => {
+    axios
+      .get(API_URL, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then((response) => setPatients(response.data))
+      .catch((error) => console.error("Error fetching patients:", error));
+  }, []);
+
+  // Handle search
+  useEffect(() => {
+    if (searchTerm) {
+      const filteredPatient = patients.find((patient) =>
+        patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSelectedPatient(filteredPatient || null);
+      if (filteredPatient) {
+        setTeethStatus(filteredPatient.teeth_status || Array(32).fill(""));
+        setPrescription(filteredPatient.prescription || "");
+        setWorkDone(filteredPatient.work_done || "");
+        setPendingWork(filteredPatient.pending_work || "");
+        setPostMedication(filteredPatient.post_medication || "");
+        setCurrentMedications(filteredPatient.current_medications || "");
+      }
+    } else {
+      setSelectedPatient(null);
+    }
+  }, [searchTerm, patients]);
 
   const handleToothClick = (index) => {
     setSelectedTooth(index);
@@ -22,22 +56,26 @@ const PatientDetails = () => {
     setTeethStatus(updatedTeethStatus);
   };
 
-  // Sample Patient Data
-  const patients = [
-    { name: "John Doe", age: 32, gender: "Male", contact: "1234567890", email: "john@example.com", bloodGroup: "O+", allergies: "None", condition: "Healthy", occupation: "Engineer" },
-    { name: "Jane Smith", age: 28, gender: "Female", contact: "9876543210", email: "jane@example.com", bloodGroup: "A+", allergies: "Penicillin", condition: "Mild infection", occupation: "Teacher" }
-  ];
+  // Save patient data to the backend
+  const handleSaveDetails = () => {
+    if (!selectedPatient) return;
 
-  useEffect(() => {
-    if (searchTerm) {
-      const filteredPatients = patients.filter((patient) =>
-        patient.name.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setSelectedPatient(filteredPatients[0]);
-    } else {
-      setSelectedPatient(null);
-    }
-  }, [searchTerm, patients]);
+    const updatedData = {
+      teeth_status: teethStatus,
+      prescription,
+      work_done: workDone,
+      pending_work: pendingWork,
+      post_medication: postMedication,
+      current_medications: currentMedications,
+    };
+
+    axios
+      .put(`${API_URL}${selectedPatient.id}/`, updatedData, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      })
+      .then(() => alert("Patient details updated successfully!"))
+      .catch((error) => console.error("Error updating patient details:", error));
+  };
 
   return (
     <div className="patient-details-page">
@@ -49,6 +87,7 @@ const PatientDetails = () => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
+
       {selectedPatient && (
         <div className="patient-details">
           <div className="personal-info">
@@ -58,11 +97,13 @@ const PatientDetails = () => {
             <p>Gender: {selectedPatient.gender}</p>
             <p>Contact: {selectedPatient.contact}</p>
             <p>Email: {selectedPatient.email}</p>
-            <p>Blood Group: {selectedPatient.bloodGroup}</p>
+            <p>Blood Group: {selectedPatient.blood_group}</p>
             <p>Allergies: {selectedPatient.allergies}</p>
             <p>Condition: {selectedPatient.condition}</p>
             <p>Occupation: {selectedPatient.occupation}</p>
           </div>
+
+          {/* Dental Chart */}
           <div className="dental-chart">
             <h2>Dental Chart</h2>
             <div className="dental-row">
@@ -72,7 +113,7 @@ const PatientDetails = () => {
                   className={`tooth ${status}`}
                   onClick={() => handleToothClick(index)}
                 >
-                  <img src={`/teeth/${status || 'normal'}.svg`} alt={`Tooth ${index + 1}`} />
+                  <img src={`/teeth/${status || "normal"}.svg`} alt={`Tooth ${index + 1}`} />
                 </div>
               ))}
             </div>
@@ -83,15 +124,17 @@ const PatientDetails = () => {
                   className={`tooth ${status}`}
                   onClick={() => handleToothClick(index + 16)}
                 >
-                  <img src={`/teeth/${status || 'normal'}.svg`} alt={`Tooth ${index + 17}`} />
+                  <img src={`/teeth/${status || "normal"}.svg`} alt={`Tooth ${index + 17}`} />
                 </div>
               ))}
             </div>
           </div>
+
+          {/* Status Update for Selected Tooth */}
           {selectedTooth !== null && (
             <div className="treatment-section">
               <div className="treatment-box">
-                <label htmlFor="status">Status</label>
+                <label htmlFor="status">Tooth Status</label>
                 <select
                   id="status"
                   value={teethStatus[selectedTooth]}
@@ -105,6 +148,8 @@ const PatientDetails = () => {
               </div>
             </div>
           )}
+
+          {/* Work Done Section */}
           <div className="work-done">
             <h2>Work Done</h2>
             <textarea
@@ -123,6 +168,8 @@ const PatientDetails = () => {
               placeholder="What has to be done"
             />
           </div>
+
+          {/* Medical History Section */}
           <div className="medical-history">
             <h2>Medical History and Past Treatments</h2>
             <textarea
@@ -136,6 +183,11 @@ const PatientDetails = () => {
               placeholder="Current Medications"
             />
           </div>
+
+          {/* Save Button */}
+          <button onClick={handleSaveDetails} className="save-btn">
+            Save Details
+          </button>
         </div>
       )}
     </div>

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import './home.css'; // Import the new CSS file
+import "./home.css"; // Import the new CSS file
 
 const Home = () => {
   const [date, setDate] = useState(new Date());
@@ -32,6 +33,16 @@ const Home = () => {
   return (
     <main className="main-content">
       <h1>Good afternoon Dr. Samidha :)</h1>
+
+      {/* Navigation Bar */}
+      <nav className="home-nav">
+        <ul>
+          <li><Link to="/patients">View Patients</Link></li>
+          <li><Link to="/appointments">View Appointments</Link></li>
+        </ul>
+      </nav>
+
+      {/* Statistics Section */}
       <div className="stats">
         <div className="stat-done">
           <h2>Patients treated</h2>
@@ -46,6 +57,8 @@ const Home = () => {
           <p>{stats.followups}</p>
         </div>
       </div>
+
+      {/* Calendar and Stats */}
       <div className="calendar-stats">
         <Calendar
           onChange={handleDateChange}

@@ -25,6 +25,8 @@ urlpatterns = [
     # You can comment out these until they're implemented
     path('patients/', include('Patient.urls')),
     path('appointments/', include('Appointment.urls')),
+    path('patients/', include('Patient.urls')),
+    path('prescriptions/', include('Prescription.urls')),
 ]
 
 # Add this if you're using MEDIA_URL in settings.py
