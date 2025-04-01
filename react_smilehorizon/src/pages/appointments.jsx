@@ -1,61 +1,40 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
-import './appointments.css'; // Create a new CSS file for appointments
-const API_URL = "http://localhost:8000/appointments/api/appointments/";
+import './appointments.css';
 
 const Appointments = () => {
   const navigate = useNavigate();
-  const [appointments, setAppointments] = useState([]);
+  const [appointments, setAppointments] = useState([
+    { id: 1, patientName: "John Doe", date: "2025-03-01", time: "10:00 AM", purpose: "Routine Checkup" },
+    { id: 2, patientName: "Jane Smith", date: "2025-03-02", time: "02:30 PM", purpose: "Filling" },
+  ]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [newAppointment, setNewAppointment] = useState({
-    patient_name: "", // Use name instead of ID
-    appointment_date: "",
-    appointment_time: "",
-    reason: "",
+    patientName: "",
+    date: "",
+    time: "",
+    purpose: "",
   });
 
-  // Fetch appointments from the backend
-  useEffect(() => {
-    axios
-      .get(API_URL)
-      .then((response) => {
-        // Ensure the patient data is populated correctly
-        console.log("Appointments API Response:", response.data);
-        setAppointments(response.data);
-      })
-      .catch((error) => console.error("Error fetching appointments:", error));
-  }, []);
-
-  // Handle form changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewAppointment({ ...newAppointment, [name]: value });
   };
 
-  // Add new appointment
   const handleAddAppointment = (e) => {
     e.preventDefault();
+    if (!newAppointment.patientName || !newAppointment.date || !newAppointment.time || !newAppointment.purpose) {
+      alert("Please fill all fields.");
+      return;
+    }
 
-    axios
-      .post(API_URL, newAppointment)
-      .then((response) => {
-        setAppointments([...appointments, response.data]);
-        setNewAppointment({
-          patient_name: "",
-          appointment_date: "",
-          appointment_time: "",
-          reason: "",
-        });
-        alert("Appointment added successfully!");
-      })
-      .catch((error) => {
-        alert("Failed to add appointment. Check console for errors.");
-        console.error("Error:", error.response.data);
-      });
+    setAppointments([
+      ...appointments,
+      { id: Date.now(), ...newAppointment },
+    ]);
+    setNewAppointment({ patientName: "", date: "", time: "", purpose: "" });
   };
 
-  // Delete an appointment
   const handleDelete = (id) => {
     const updatedAppointments = appointments.filter((appt) => appt.id !== id);
     setAppointments(updatedAppointments);
@@ -79,55 +58,60 @@ const Appointments = () => {
     <div className="appointments-page">
       <h1>Appointments</h1>
 
+      {/* Search Bar */}
+      <input
+        type="text"
+        placeholder="Search by patient name..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="search-bar"
+      />
+
       {/* Appointment Form */}
       <form onSubmit={handleAddAppointment} className="appointment-form">
         <input
           type="text"
-          name="patient_name"
-          placeholder="Enter Patient Name (e.g., John Doe)"
-          value={newAppointment.patient_name}
+          name="patientName"
+          placeholder="Patient Name"
+          value={newAppointment.patientName}
           onChange={handleInputChange}
-          required
         />
         <input
           type="date"
-          name="appointment_date"
-          value={newAppointment.appointment_date}
+          name="date"
+          value={newAppointment.date}
           onChange={handleInputChange}
-          required
         />
         <input
           type="time"
-          name="appointment_time"
-          value={newAppointment.appointment_time}
+          name="time"
+          value={newAppointment.time}
           onChange={handleInputChange}
-          required
         />
         <input
           type="text"
-          name="reason"
-          placeholder="Purpose of Appointment"
-          value={newAppointment.reason}
+          name="purpose"
+          placeholder="Purpose"
+          value={newAppointment.purpose}
           onChange={handleInputChange}
-          required
         />
         <button type="submit">Add Appointment</button>
       </form>
 
       {/* Appointment List */}
       <ul className="appointment-list">
-        {appointments.length ? (
-          appointments.map((appt) => (
+        {filteredAppointments.length ? (
+          filteredAppointments.map((appt) => (
             <li key={appt.id} className="appointment-item">
               <div>
                 <button 
                   className="patient-name-button" 
                   onClick={() => handleAppointmentClick(appt.id)}
                 >
-                  {appt.patient.first_name} {appt.patient.last_name}
-                </button> — {appt.appointment_date} at {appt.appointment_time}
+                  {appt.patientName}
+                </button> — {appt.date} at {appt.time}  
                 <br />
-                Purpose: {appt.reason}
+                Purpose: {appt.purpose}
               </div>
               <div className="appointment-actions">
                 <button 
