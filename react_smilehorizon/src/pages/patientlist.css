@@ -82,3 +82,9 @@
 .delete-btn:hover {
   background-color: #c9302c;
 }
+/* Gender dropdown styling */
+.patient-form select.gender-select {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}

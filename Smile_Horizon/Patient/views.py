@@ -1,12 +1,18 @@
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.db.models import Q
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import action
 
-from .models import Patient, MedicalHistory, Medication, Document
+from .models import Patient, MedicalHistory, Medication, Document, TeethStatus
 from .serializers import (
-    PatientSerializer, MedicalHistorySerializer, MedicationSerializer, DocumentSerializer
+    PatientSerializer,
+    PatientDetailSerializer,
+    MedicalHistorySerializer,
+    MedicationSerializer,
+    DocumentSerializer,
+    TeethStatusSerializer,
 )
 
 
@@ -16,7 +22,15 @@ class PatientViewSet(viewsets.ModelViewSet):
     """
     queryset = Patient.objects.all().order_by('-created_at')
     serializer_class = PatientSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+
+    def get_serializer_class(self):
+        """
+        Return detailed serializer for patient detail view.
+        """
+        if self.action == 'retrieve':
+            return PatientDetailSerializer
+        return PatientSerializer
 
     def get_queryset(self):
         """
@@ -39,6 +53,38 @@ class PatientViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    def create(self, request, *args, **kwargs):
+        """
+        Override create method to print validation errors.
+        """
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            # Print validation errors to the console or log
+            print(serializer.errors)  # This will print the errors in the server logs
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
+    def update_teeth_status(self, request, pk=None):
+        """
+        Custom action to update a patient's teeth status.
+        """
+        patient = get_object_or_404(Patient, pk=pk)
+        teeth_data = request.data.get("teeth_status", [])
+
+        for tooth_data in teeth_data:
+            tooth_number = tooth_data.get("tooth_number")
+            status = tooth_data.get("status")
+
+            if tooth_number and status:
+                tooth, created = TeethStatus.objects.update_or_create(
+                    patient=patient, tooth_number=tooth_number, defaults={"status": status}
+                )
+
+        return Response({"message": "Teeth status updated successfully"}, status=status.HTTP_200_OK)
+
 
 class MedicalHistoryViewSet(viewsets.ModelViewSet):
     """
@@ -46,9 +92,8 @@ class MedicalHistoryViewSet(viewsets.ModelViewSet):
     """
     queryset = MedicalHistory.objects.all().order_by('-diagnosis_date')
     serializer_class = MedicalHistorySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
-# <<<<<<< naya-branch
 
 class MedicationViewSet(viewsets.ModelViewSet):
     """
@@ -56,7 +101,7 @@ class MedicationViewSet(viewsets.ModelViewSet):
     """
     queryset = Medication.objects.all().order_by('-prescribed_date')
     serializer_class = MedicationSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 
 class DocumentViewSet(viewsets.ModelViewSet):
@@ -65,85 +110,4 @@ class DocumentViewSet(viewsets.ModelViewSet):
     """
     queryset = Document.objects.all().order_by('-upload_date')
     serializer_class = DocumentSerializer
-    permission_classes = [IsAuthenticated]
-# =======
-
-# def patient_list(request):
-#     search_query = request.GET.get('search', '')
-#     status_filter = request.GET.get('status', '')
-    
-#     patients = Patient.objects.all()
-    
-#     if search_query:
-#         patients = patients.filter(
-#             Q(first_name__icontains=search_query) | 
-#             Q(last_name__icontains=search_query) | 
-#             Q(contact_number__icontains=search_query) | 
-#             Q(email__icontains=search_query)
-#         )
-    
-#     if status_filter:
-#         patients = patients.filter(status=status_filter)
-        
-#     context = {
-#         'patients': patients,
-#         'search_query': search_query,
-#         'status_filter': status_filter,
-#         'status_choices': Patient.STATUS_CHOICES,
-#     }
-    
-#     return render(request, 'patient/patient_list.html', context)
-
-
-# def patient_detail(request, pk):
-#     patient = get_object_or_404(Patient, pk=pk)
-#     medical_histories = patient.medical_histories.all()
-#     current_medications = patient.medications.filter(status='CURRENT')
-#     past_medications = patient.medications.filter(status='PAST')
-#     documents = patient.documents.all()
-#     appointments = patient.appointments.all().order_by('-appointment_date')
-#     treatment_records = patient.treatment_records.all().order_by('-date_of_treatment')
-    
-#     context = {
-#         'patient': patient,
-#         'medical_histories': medical_histories,
-#         'current_medications': current_medications,
-#         'past_medications': past_medications,
-#         'documents': documents,
-#         'appointments': appointments,
-#         'treatment_records': treatment_records,
-#     }
-    
-#     return render(request, 'patient/patient_detail.html', context)
-
-# def patient_create(request):
-#     if request.method == 'POST':
-#         form = PatientForm(request.POST)
-#         if form.is_valid():
-#             patient = form.save()
-#             # Verify the patient exists in the database
-#             test_patient = Patient.objects.filter(id=patient.id).first()
-#             if test_patient:
-#                 print(f"Patient saved successfully with ID: {test_patient.id}")
-#             else:
-#                 print("Patient was not saved to database!")
-#             return redirect('patient_detail', pk=patient.pk)
-#     else:
-#         form = PatientForm()
-    
-#     return render(request, 'patient/patient_form.html', {'form': form, 'title': 'Add New Patient'})
-
-
-# def patient_update(request, pk):
-#     patient = get_object_or_404(Patient, pk=pk)
-    
-#     if request.method == 'POST':
-#         form = PatientForm(request.POST, instance=patient)
-#         if form.is_valid():
-#             patient = form.save()
-#             return redirect('patient_detail', pk=patient.pk)
-#     else:
-#         form = PatientForm(instance=patient)
-    
-#     return render(request, 'patient/patient_form.html', {'form': form, 'title': 'Edit Patient', 'patient': patient})
-# >>>>>>> main
+    permission_classes = [AllowAny]

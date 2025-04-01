@@ -89,3 +89,21 @@ class Document(models.Model):
     
     def __str__(self):
         return self.title
+    
+class TeethStatus(models.Model):
+    """
+    Tracks the status of individual teeth for a patient
+    """
+    STATUS_CHOICES = (
+        ('normal', 'Normal'),
+        ('filling', 'Filling'),
+        ('extraction', 'Extraction'),
+        ('missing', 'Missing'),
+    )
+
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="teeth_status")
+    tooth_number = models.IntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='normal')
+
+    def __str__(self):
+        return f"Tooth {self.tooth_number} - {self.status} ({self.patient})"

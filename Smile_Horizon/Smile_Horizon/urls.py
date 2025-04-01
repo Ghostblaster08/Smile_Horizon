@@ -1,7 +1,7 @@
 """
 URL configuration for Smile_Horizon project.
 
-The `urlpatterns` list routes URLs to views. For more information please see:
+The urlpatterns list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
 Examples:
 Function views
@@ -19,12 +19,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('core.urls')),
-    # You can comment out these until they're implemented
-    path('patients/', include('Patient.urls')),
+    
     path('appointments/', include('Appointment.urls')),
+    path('', include('Patient.urls')),
     path('prescriptions/', include('Prescription.urls')),
 ]
 

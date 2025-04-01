@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Patient, MedicalHistory, Medication, Document
+from .models import Patient, MedicalHistory, Medication, Document, TeethStatus
 
 
 class MedicalHistorySerializer(serializers.ModelSerializer):
@@ -9,7 +9,7 @@ class MedicalHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = MedicalHistory
         fields = '__all__'
-        extra_kwargs = {'patient': {'read_only': True}}  # Ensure patient is set via view logic
+        extra_kwargs = {'patient': {'read_only': True}}  # Ensures patient is set via view logic
 
 
 class MedicationSerializer(serializers.ModelSerializer):
@@ -32,10 +32,21 @@ class DocumentSerializer(serializers.ModelSerializer):
         extra_kwargs = {'patient': {'read_only': True}}
 
 
+class TeethStatusSerializer(serializers.ModelSerializer):
+    """
+    Serializer for tracking the status of individual teeth.
+    """
+    class Meta:
+        model = TeethStatus
+        fields = ["tooth_number", "status"]
+
+
 class PatientSerializer(serializers.ModelSerializer):
     """
     Serializer for basic patient details (list & create views).
     """
+    last_visit = serializers.DateField(required=False, allow_null=True)
+
     class Meta:
         model = Patient
         fields = [
@@ -56,6 +67,7 @@ class PatientDetailSerializer(serializers.ModelSerializer):
     medical_histories = MedicalHistorySerializer(many=True, read_only=True)
     medications = MedicationSerializer(many=True, read_only=True)
     documents = DocumentSerializer(many=True, read_only=True)
+    teeth_status = TeethStatusSerializer(many=True, read_only=True)
 
     class Meta:
         model = Patient
@@ -63,5 +75,5 @@ class PatientDetailSerializer(serializers.ModelSerializer):
             'id', 'first_name', 'last_name', 'age', 'gender', 'contact_number',
             'email', 'address', 'blood_group', 'allergies', 'existing_conditions',
             'status', 'last_visit', 'created_at', 'updated_at',
-            'medical_histories', 'medications', 'documents'
+            'medical_histories', 'medications', 'documents', 'teeth_status'
         ]
