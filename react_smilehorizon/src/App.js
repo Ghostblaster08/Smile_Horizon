@@ -4,6 +4,7 @@ import Sidebar from "./components/sidebar";
 import PatientList from "./pages/patientlist";
 import PatientDetails from "./pages/patientdetails";
 import Appointments from "./pages/appointments";
+import AppointmentDetails from "./pages/apmt_details";
 import Home from "./pages/home";
 import "./App.css";
 
@@ -18,6 +19,7 @@ function App() {
             <Route path="/patientlist" element={<PatientList />} />
             <Route path="/patientdetails" element={<PatientDetails />} />
             <Route path="/appointments" element={<Appointments />} />
+            <Route path="/appointment/:id" element={<AppointmentDetails />} />
           </Routes>
         </div>
       </div>

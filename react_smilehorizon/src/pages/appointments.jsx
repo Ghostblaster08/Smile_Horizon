@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import './appointments.css'; // Create a new CSS file for appointments
-
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import './appointments.css';
+import AppointmentDetails from "./apmt_details";
 const Appointments = () => {
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState([
     { id: 1, patientName: "John Doe", date: "2025-03-01", time: "10:00 AM", purpose: "Routine Checkup" },
     { id: 2, patientName: "Jane Smith", date: "2025-03-02", time: "02:30 PM", purpose: "Filling" },
@@ -38,9 +40,19 @@ const Appointments = () => {
     setAppointments(updatedAppointments);
   };
 
+  const handleAppointmentClick = (id) => {
+    console.log(`Navigating to appointment ${id}`);
+    // Use the exact same path as defined in App.js
+    navigate(`/appointment/${id}`);
+  };
+
   const filteredAppointments = appointments.filter((appt) =>
     appt.patientName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  useEffect(() => {
+    console.log("Navigate function available:", !!navigate);
+  }, [navigate]);
 
   return (
     <div className="appointments-page">
@@ -92,13 +104,29 @@ const Appointments = () => {
           filteredAppointments.map((appt) => (
             <li key={appt.id} className="appointment-item">
               <div>
-                <strong>{appt.patientName}</strong> — {appt.date} at {appt.time}  
+                <button 
+                  className="patient-name-button" 
+                  onClick={() => handleAppointmentClick(appt.id)}
+                >
+                  {appt.patientName}
+                </button> — {appt.date} at {appt.time}  
                 <br />
                 Purpose: {appt.purpose}
               </div>
-              <button onClick={() => handleDelete(appt.id)} className="delete-btn">
-                Delete
-              </button>
+              <div className="appointment-actions">
+                <button 
+                  onClick={() => handleAppointmentClick(appt.id)} 
+                  className="view-btn"
+                >
+                  View Details
+                </button>
+                <button 
+                  onClick={() => handleDelete(appt.id)} 
+                  className="delete-btn"
+                >
+                  Delete
+                </button>
+              </div>
             </li>
           ))
         ) : (
