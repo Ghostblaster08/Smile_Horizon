@@ -1,206 +1,296 @@
-/* .patient-details-page {
-  padding: 20px;
-}
-
-.search-panel {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.search-panel input {
-  width: 50%;
-  padding: 12px;
-  border: 2px solid #2E8B57;
-  border-radius: 5px;
-  font-size: 1rem;
-}
-
-.patient-details {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.personal-info, .work-done, .medical-history {
-  background-color: #f4f4f4;
-  padding: 20px;
-  border-radius: 5px;
-}
-
-.dental-chart {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.dental-row {
-  display: flex;
-  gap: 5px;
-}
-
-.tooth {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid #008080;
-  border-radius: 5px;
-  background-color: white;
-  cursor: pointer;
-}
-
-.filling {
-  background-color: yellow;
-}
-
-.extraction {
-  background-color: red;
-}
-
-.missing {
-  background-color: gray;
-}
-
-.treatment-section {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-}
-
-.treatment-box {
-  display: flex;
-  flex-direction: column;
-  background-color: #f4f4f4;
-  padding: 15px;
-  border-radius: 8px;
-  border: 2px solid #2E8B57;
-}
-
-.treatment-box label {
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #2E8B57;
-}
-
-.treatment-box select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-textarea {
-  width: 100%;
-  min-height: 80px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 8px;
-  resize: vertical;
-} */
-
+/* ===== Base Styles ===== */
 .patient-details-page {
-  padding: 20px;
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
 }
 
+/* ===== Search Panel ===== */
 .search-panel {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: 32px;
 }
 
 .search-panel input {
-  width: 50%;
-  padding: 12px;
-  border: 2px solid #2E8B57;
-  border-radius: 5px;
+  width: 60%;
+  padding: 14px 20px;
+  border: 2px solid #38a169;
+  border-radius: 8px;
   font-size: 1rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
+.search-panel input:focus {
+  outline: none;
+  border-color: #2c7a7b;
+  box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.2);
+}
+
+/* ===== Patient Details Container ===== */
 .patient-details {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 
-.personal-info, .work-done, .medical-history {
-  background-color: #f4f4f4;
-  padding: 20px;
-  border-radius: 5px;
+/* ===== Personal Info Table ===== */
+.personal-info {
+  background-color: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #38a169;
+  overflow-x: auto;
 }
 
+.personal-info h2 {
+  color: #2c7a7b;
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.patient-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.patient-table th {
+  text-align: left;
+  padding: 12px 16px;
+  background-color: #f7fafc;
+  color: #2d3748;
+  font-weight: 600;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.patient-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf2f7;
+  vertical-align: top;
+}
+
+.patient-table tr:last-child td {
+  border-bottom: none;
+}
+
+.patient-table tr:hover td {
+  background-color: #f8f9fa;
+}
+
+/* ===== Dental Chart ===== */
 .dental-chart {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  gap: 40px;
+  width: fit-content;
+  margin: 0 auto;
 }
 
-.dental-row {
+.dental-arch {
   display: flex;
-  gap: 5px;
+  justify-content: center;
+  position: relative;
+}
+
+.dental-arch::before {
+  content: attr(data-arch);
+  position: absolute;
+  font-size: 0.8rem;
+  color: #718096;
+  width: 100%;
+  text-align: center;
+}
+
+.dental-arch.upper::before {
+  content: "Upper Jaw (1-16)";
+  top: -25px;
+}
+
+.dental-arch.lower::before {
+  content: "Lower Jaw (17-32)";
+  bottom: -25px;
+}
+
+.tooth-row {
+  display: flex;
+  gap: 4px;
 }
 
 .tooth {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #008080;
-  border-radius: 5px;
+  border: 1px solid #cbd5e0;
+  border-radius: 50%;
   background-color: white;
   cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.tooth::after {
+  content: attr(data-number);
+  position: absolute;
+  font-size: 0.7rem;
+  color: #718096;
+  font-weight: bold;
+}
+
+.upper .tooth::after {
+  bottom: -20px;
+}
+
+.lower .tooth::after {
+  top: -20px;
+}
+
+.tooth-pair {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+}
+
+
+/* Tooth Hover Effect */
+.tooth:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tooth img {
-  width: 100%;
-  height: 100%;
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
 }
 
+/* Tooth Status Colors */
 .filling {
-  background-color: yellow;
+  background-color: #fefcbf;
+  border-color: #ecc94b;
 }
 
 .extraction {
-  background-color: red;
+  background-color: #fed7d7;
+  border-color: #f56565;
 }
 
 .missing {
-  background-color: gray;
+  background-color: #e2e8f0;
+  border-color: #a0aec0;
 }
 
+/* ===== Treatment Section ===== */
 .treatment-section {
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
+  margin-top: 24px;
 }
 
 .treatment-box {
-  display: flex;
-  flex-direction: column;
-  background-color: #f4f4f4;
-  padding: 15px;
-  border-radius: 8px;
-  border: 2px solid #2E8B57;
+  background-color: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border-left: 4px solid #38a169;
 }
 
 .treatment-box label {
-  font-weight: bold;
-  margin-bottom: 5px;
-  color: #2E8B57;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c7a7b;
+  display: block;
 }
 
 .treatment-box select {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  width: 100%;
+  background-color: #f7fafc;
 }
 
+/* ===== Textareas ===== */
 textarea {
   width: 100%;
-  min-height: 80px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 8px;
+  min-height: 100px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 12px;
   resize: vertical;
+  margin-bottom: 16px;
+  font-family: inherit;
+  transition: border 0.2s ease;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #38a169;
+  box-shadow: 0 0 0 2px rgba(56, 161, 105, 0.2);
+}
+
+/* ===== Submit Button ===== */
+.submit-btn {
+  background-color: #38a169;
+  color: white;
+  border: none;
+  padding: 14px 24px;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: flex-end;
+  margin-top: 16px;
+}
+
+.submit-btn:hover {
+  background-color: #2f855a;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+  .search-panel input {
+    width: 100%;
+  }
+  
+  .patient-table {
+    display: block;
+  }
+  
+  .patient-table th, 
+  .patient-table td {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  
+  .tooth {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .tooth::after {
+    font-size: 0.6rem;
+  }
+  
 }
