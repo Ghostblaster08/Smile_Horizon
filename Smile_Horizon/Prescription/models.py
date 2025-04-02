@@ -20,6 +20,51 @@ class Medicine(models.Model):
     class Meta:
         ordering = ['name']
 
+class ToothStatus(models.Model):
+    """
+    Model to track the status of individual teeth
+    """
+    TOOTH_STATUS_CHOICES = [
+        ('normal', 'Normal'),
+        ('filling', 'Filling'),
+        ('extraction', 'Extraction'),
+        ('missing', 'Missing'),
+        ('decay', 'Decay'),
+        ('crown', 'Crown'),
+        ('implant', 'Implant'),
+    ]
+    
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='prescription_teeth_status')
+    tooth_number = models.IntegerField(help_text="Number of the tooth (1-32)")
+    status = models.CharField(max_length=20, choices=TOOTH_STATUS_CHOICES, default='normal')
+    notes = models.TextField(blank=True)
+    treatment_date = models.DateField(default=timezone.now)
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['patient', 'tooth_number']
+        ordering = ['patient', 'tooth_number']
+    
+    def __str__(self):
+        return f"Tooth {self.tooth_number} ({self.status}) - {self.patient}"
+    
+    @classmethod
+    def update_tooth_status(cls, patient_id, tooth_number, status, notes=""):
+        """
+        Update the status of a specific tooth for a patient
+        Creates a new record if one doesn't exist
+        """
+        tooth, created = cls.objects.update_or_create(
+            patient_id=patient_id,
+            tooth_number=tooth_number,
+            defaults={
+                'status': status,
+                'notes': notes,
+                'treatment_date': timezone.now()
+            }
+        )
+        return tooth
+
 class Prescription(models.Model):
     """
     Model to store prescriptions given after appointments
@@ -39,6 +84,8 @@ class Prescription(models.Model):
     pending_work = models.TextField(blank=True, help_text="Description of pending dental work")
     status = models.CharField(max_length=20, choices=PRESCRIPTION_STATUS_CHOICES, default='ACTIVE')
     prescription_date = models.DateField(default=timezone.now)
+    # Link to the treated tooth if this prescription is for a specific tooth
+    treated_tooth = models.ForeignKey(ToothStatus, on_delete=models.SET_NULL, related_name='prescriptions', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -61,19 +108,33 @@ class Prescription(models.Model):
         return f"{medicines_text}\n\nNotes: {self.notes}"
     
     @classmethod
-    def create_from_frontend(cls, patient_id, prescription_text=None, work_done=None, pending_work=None):
+    def create_from_frontend(cls, patient_id, prescription_text=None, work_done=None, pending_work=None, treated_tooth_number=None, tooth_status=None):
         """
         Create a prescription from frontend data
         This helps bridge the gap between frontend form data and model structure
         """
         try:
             patient = Patient.objects.get(id=patient_id)
+            
+            # Create or update tooth status if provided
+            treated_tooth = None
+            if treated_tooth_number is not None and tooth_status:
+                treated_tooth = ToothStatus.update_tooth_status(
+                    patient_id=patient_id,
+                    tooth_number=treated_tooth_number,
+                    status=tooth_status,
+                    notes=work_done if work_done else "Treatment provided"
+                )
+            
+            # Create the prescription
             prescription = cls.objects.create(
                 patient=patient,
                 notes=prescription_text or "",
                 work_done=work_done or "",
                 pending_work=pending_work or "",
+                treated_tooth=treated_tooth
             )
+            
             return prescription
         except Patient.DoesNotExist:
             raise ValueError(f"Patient with ID {patient_id} does not exist")

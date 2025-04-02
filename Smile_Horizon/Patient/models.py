@@ -101,7 +101,7 @@ class TeethStatus(models.Model):
         ('missing', 'Missing'),
     )
 
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="teeth_status")
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='patient_teeth_status')
     tooth_number = models.IntegerField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='normal')
 

@@ -63,18 +63,11 @@ const PatientDetails = () => {
   const fetchPatientDetails = async (patientId) => {
     try {
       setLoading(true);
-      // Use the retrieve endpoint to get detailed patient info
       const response = await axios.get(`${API_URL}${patientId}/`);
       setSelectedPatient(response.data);
       
-      // Extract related data from the response
-      if (response.data.teeth_status && response.data.teeth_status.length > 0) {
-        const teethData = Array(32).fill("normal");
-        response.data.teeth_status.forEach((tooth) => {
-          teethData[tooth.tooth_number - 1] = tooth.status;
-        });
-        setTeethStatus(teethData);
-      }
+      // Fetch teeth status
+      await fetchPatientTeethStatus(patientId);
       
       setMedicalHistories(response.data.medical_histories || []);
       setMedications(response.data.medications || []);
@@ -83,6 +76,23 @@ const PatientDetails = () => {
     } catch (error) {
       console.error("Error fetching patient details:", error);
       setLoading(false);
+    }
+  };
+
+  // Add a function to fetch tooth status when patient is selected
+  const fetchPatientTeethStatus = async (patientId) => {
+    try {
+      const response = await axios.get(`http://localhost:8000/prescriptions/api/tooth-status/patient/?patient_id=${patientId}`);
+      
+      // Convert to array for tooth chart
+      const teethData = Array(32).fill("normal");
+      response.data.forEach((tooth) => {
+        teethData[tooth.tooth_number - 1] = tooth.status;
+      });
+      
+      setTeethStatus(teethData);
+    } catch (error) {
+      console.error("Error fetching teeth status:", error);
     }
   };
 
@@ -101,10 +111,12 @@ const PatientDetails = () => {
       updatedTeethStatus[selectedTooth] = status;
       setTeethStatus(updatedTeethStatus);
 
-      // Use the correct action endpoint to update teeth
-      await axios.post(`${API_URL}${selectedPatient.id}/update_teeth_status/`, {
+      // Update tooth status using the new endpoint
+      await axios.post('http://localhost:8000/prescriptions/api/tooth-status/update/', {
+        patient_id: selectedPatient.id,
         tooth_number: selectedTooth + 1,
         status: status,
+        notes: `Status updated to ${status} on ${new Date().toLocaleDateString()}`
       });
       
       setLoading(false);
@@ -134,28 +146,35 @@ const PatientDetails = () => {
       // If there's prescription data, create a prescription
       if (prescription || workDone || pendingWork || postMedication) {
         try {
-          // Use the correct API endpoint based on URL structure
+          // Include tooth data if a tooth is selected
+          const prescriptionData = {
+            patient_id: selectedPatient.id,
+            prescription: prescription,
+            work_done: workDone,
+            pending_work: pendingWork,
+            post_medication: postMedication
+          };
+          
+          // Add tooth information if a tooth is selected
+          if (selectedTooth !== null) {
+            prescriptionData.treated_tooth_number = selectedTooth + 1;
+            prescriptionData.tooth_status = teethStatus[selectedTooth];
+          }
+          
+          // Use the correct API endpoint
           const prescriptionResponse = await axios.post(
             'http://localhost:8000/prescriptions/api/prescriptions/create_from_treatment/', 
-            {
-              patient_id: selectedPatient.id,
-              prescription: prescription,
-              work_done: workDone,
-              pending_work: pendingWork,
-              post_medication: postMedication
-            },
+            prescriptionData,
             {
               headers: {
                 'Content-Type': 'application/json',
-                // Add CSRF token if needed
-                // 'X-CSRFToken': getCookie('csrftoken'),
               }
             }
           );
           
           console.log("Prescription created successfully:", prescriptionResponse.data);
           
-          // Reset the prescription form fields
+          // Reset form fields
           setPrescription("");
           setWorkDone("");
           setPendingWork("");
@@ -164,19 +183,18 @@ const PatientDetails = () => {
           console.error("Error creating prescription:", prescriptionError);
           console.error("Response data:", prescriptionError.response?.data);
           console.error("Status code:", prescriptionError.response?.status);
-          alert(`Failed to create prescription: ${prescriptionError.response?.data || prescriptionError.message}`);
-          // Don't throw here, so we can still continue with the rest of the function
+          alert(`Failed to create prescription: ${prescriptionError.response?.data?.error || prescriptionError.message}`);
         }
       }
 
       alert("Patient details and treatment information updated successfully!");
       
-      // Refresh patient details to get the latest data
+      // Refresh patient details
       fetchPatientDetails(selectedPatient.id);
       setLoading(false);
     } catch (error) {
-      console.error("Error updating patient details:", error.response?.data || error.message);
-      alert("Failed to update patient details. Please check the console for details.");
+      console.error("Error updating patient details:", error);
+      alert("Failed to update patient details. See console for details.");
       setLoading(false);
     }
   };

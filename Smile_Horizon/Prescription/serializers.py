@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Medicine, Prescription, PrescribedMedicine
+from .models import Medicine, Prescription, PrescribedMedicine, ToothStatus
 from Patient.models import Patient
 from django.utils import timezone
 
@@ -48,6 +48,13 @@ class PrescribedMedicineSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class ToothStatusSerializer(serializers.ModelSerializer):
+    """Serializer for the ToothStatus model"""
+    class Meta:
+        model = ToothStatus
+        fields = ['id', 'patient', 'tooth_number', 'status', 'notes', 'treatment_date', 'last_updated']
+
+
 class PrescriptionSerializer(serializers.ModelSerializer):
     """
     Serializer for the Prescription model.
@@ -57,13 +64,15 @@ class PrescriptionSerializer(serializers.ModelSerializer):
     patient_id = serializers.IntegerField(source='patient.id', read_only=True)
     work_done_details = serializers.CharField(source='work_done', read_only=True)
     pending_work_details = serializers.CharField(source='pending_work', read_only=True)
+    treated_tooth_details = ToothStatusSerializer(source='treated_tooth', read_only=True)
 
     class Meta:
         model = Prescription
         fields = [
             'id', 'patient', 'patient_id', 'patient_name', 'appointment', 'treatment_record', 
             'notes', 'work_done', 'work_done_details', 'pending_work', 'pending_work_details',
-            'status', 'prescription_date', 'created_at', 'updated_at', 'prescribed_medicines'
+            'status', 'prescription_date', 'treated_tooth', 'treated_tooth_details',
+            'created_at', 'updated_at', 'prescribed_medicines'
         ]
         read_only_fields = ['patient_name', 'patient_id', 'work_done_details', 'pending_work_details']
         extra_kwargs = {
@@ -166,42 +175,39 @@ class PrescriptionCreateFromTreatmentSerializer(serializers.Serializer):
     work_done = serializers.CharField(required=False, allow_blank=True)
     pending_work = serializers.CharField(required=False, allow_blank=True)
     post_medication = serializers.CharField(required=False, allow_blank=True)
+    treated_tooth_number = serializers.IntegerField(required=False, allow_null=True)
+    tooth_status = serializers.CharField(required=False, allow_blank=True)
     
     def create(self, validated_data):
         patient_id = validated_data.get('patient_id')
+        prescription_text = validated_data.get('prescription', '')
+        work_done = validated_data.get('work_done', '')
+        pending_work = validated_data.get('pending_work', '')
+        treated_tooth_number = validated_data.get('treated_tooth_number')
+        tooth_status = validated_data.get('tooth_status')
         
         try:
-            patient = Patient.objects.get(id=patient_id)
-        except Patient.DoesNotExist:
-            raise serializers.ValidationError({'patient_id': f'Patient with ID {patient_id} does not exist'})
-        
-        # Create the prescription
-        prescription = Prescription.objects.create(
-            patient=patient,
-            notes=validated_data.get('prescription', ''),
-            work_done=validated_data.get('work_done', ''),
-            pending_work=validated_data.get('pending_work', ''),
-            status='ACTIVE',
-            prescription_date=timezone.now().date()
-        )
-        
-        # Add medicine if provided
-        post_medication = validated_data.get('post_medication')
-        if post_medication and post_medication.strip():
-            medicine, _ = Medicine.objects.get_or_create(
-                name=post_medication,
-                defaults={'description': 'Added from patient details form'}
+            # Create the prescription with tooth data if provided
+            prescription = Prescription.create_from_frontend(
+                patient_id=patient_id,
+                prescription_text=prescription_text,
+                work_done=work_done,
+                pending_work=pending_work,
+                treated_tooth_number=treated_tooth_number,
+                tooth_status=tooth_status
             )
             
-            PrescribedMedicine.objects.create(
-                prescription=prescription,
-                medicine=medicine,
-                dosage='As directed',
-                frequency='As needed',
-                duration='As required'
-            )
-            
-        return prescription
+            # Add post-medication if provided
+            post_medication = validated_data.get('post_medication')
+            if post_medication and post_medication.strip():
+                PrescribedMedicine.add_medicine_to_prescription(
+                    prescription_id=prescription.id,
+                    medicine_name=post_medication
+                )
+                
+            return prescription
+        except Exception as e:
+            raise serializers.ValidationError(str(e))
     
     def to_representation(self, instance):
         return PrescriptionSerializer(instance).data

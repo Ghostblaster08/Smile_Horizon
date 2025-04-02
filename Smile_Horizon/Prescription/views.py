@@ -3,13 +3,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from .models import Medicine, Prescription, PrescribedMedicine
+from .models import Medicine, Prescription, PrescribedMedicine, ToothStatus
 from .serializers import (
     MedicineSerializer, 
     PrescriptionSerializer, 
     PrescribedMedicineSerializer,
     SimplePrescriptionSerializer,
-    PrescriptionCreateFromTreatmentSerializer
+    PrescriptionCreateFromTreatmentSerializer,
+    ToothStatusSerializer
 )
 from Patient.models import Patient
 
@@ -160,4 +161,71 @@ class PrescribedMedicineViewSet(viewsets.ModelViewSet):
         prescribed_medicine.save()
         return Response(
             PrescribedMedicineSerializer(prescribed_medicine).data
+        )
+
+
+class ToothStatusViewSet(viewsets.ModelViewSet):
+    """API endpoint to manage tooth status"""
+    queryset = ToothStatus.objects.all()
+    serializer_class = ToothStatusSerializer
+    permission_classes = [permissions.AllowAny]  # Adjust as needed
+    
+    def get_queryset(self):
+        queryset = ToothStatus.objects.all()
+        
+        # Filter by patient ID
+        patient_id = self.request.query_params.get('patient')
+        if patient_id:
+            queryset = queryset.filter(patient_id=patient_id)
+            
+        return queryset
+    
+    @action(detail=False, methods=['post'])
+    def update_status(self, request):
+        """Update a tooth's status"""
+        patient_id = request.data.get('patient_id')
+        tooth_number = request.data.get('tooth_number')
+        status = request.data.get('status')
+        notes = request.data.get('notes', '')
+        
+        if not all([patient_id, tooth_number, status]):
+            return Response(
+                {"error": "Patient ID, tooth number, and status are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            # Use the class method to update the tooth status
+            tooth = ToothStatus.update_tooth_status(
+                patient_id=patient_id,
+                tooth_number=tooth_number,
+                status=status,
+                notes=notes
+            )
+            
+            return Response(
+                ToothStatusSerializer(tooth).data,
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+    @action(detail=False, methods=['get'])
+    def patient_teeth(self, request):
+        """Get all teeth statuses for a specific patient"""
+        patient_id = request.query_params.get('patient_id')
+        
+        if not patient_id:
+            return Response(
+                {"error": "Patient ID is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        teeth = ToothStatus.objects.filter(patient_id=patient_id).order_by('tooth_number')
+        return Response(
+            ToothStatusSerializer(teeth, many=True).data,
+            status=status.HTTP_200_OK
         )
