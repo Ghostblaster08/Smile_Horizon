@@ -36,56 +36,124 @@ const AppointmentDetails = () => {
   const [selectedTooth, setSelectedTooth] = useState(null);
   const [saveError, setSaveError] = useState(null);
 
-  // Fetch appointment data
+  // Fetch appointment data with detailed logging
   useEffect(() => {
     const fetchAppointmentData = async () => {
       setLoading(true);
+      setSaveError(null);
+      
       try {
+        console.log(`Fetching appointment with ID: ${id} from ${APPOINTMENT_API_URL}/${id}/`);
+        
         // Fetch the appointment details
         const appointmentResponse = await axios.get(`${APPOINTMENT_API_URL}/${id}/`);
+        console.log("Appointment data received:", appointmentResponse.data);
         setAppointment(appointmentResponse.data);
         
         // Fetch the patient details using the patient_id from the appointment
         if (appointmentResponse.data.patient) {
+          console.log(`Fetching patient with ID: ${appointmentResponse.data.patient} from ${PATIENT_API_URL}/${appointmentResponse.data.patient}/`);
+          
           const patientResponse = await axios.get(`${PATIENT_API_URL}/${appointmentResponse.data.patient}/`);
+          console.log("Patient data received:", patientResponse.data);
           setPatient(patientResponse.data);
           
           // Fetch the patient's teeth status
-          const teethStatusResponse = await axios.get(`${TOOTH_STATUS_API_URL}/patient/?patient_id=${patientResponse.data.id}`);
+          console.log(`Fetching teeth status for patient ID: ${patientResponse.data.id} from ${TOOTH_STATUS_API_URL}/patient/?patient_id=${patientResponse.data.id}`);
           
-          // Initialize teeth status array with defaults
-          const initialTeethStatus = Array(32).fill("normal");
-          
-          // Update with data from the API
-          teethStatusResponse.data.forEach(tooth => {
-            initialTeethStatus[tooth.tooth_number - 1] = tooth.status;
-          });
-          
-          setTeethStatus(initialTeethStatus);
+          try {
+            const teethStatusResponse = await axios.get(`${TOOTH_STATUS_API_URL}/patient/?patient_id=${patientResponse.data.id}`);
+            console.log("Teeth status data received:", teethStatusResponse.data);
+            
+            // Initialize teeth status array with defaults
+            const initialTeethStatus = Array(32).fill("normal");
+            
+            // Update with data from the API
+            if (Array.isArray(teethStatusResponse.data)) {
+              teethStatusResponse.data.forEach(tooth => {
+                if (tooth.tooth_number >= 1 && tooth.tooth_number <= 32) {
+                  initialTeethStatus[tooth.tooth_number - 1] = tooth.status;
+                } else {
+                  console.warn(`Invalid tooth number received: ${tooth.tooth_number}`);
+                }
+              });
+            } else {
+              console.warn("Teeth status data is not an array:", teethStatusResponse.data);
+            }
+            
+            setTeethStatus(initialTeethStatus);
+          } catch (teethError) {
+            console.error("Error fetching teeth status:", teethError);
+            console.log("Server response:", teethError.response?.data);
+            console.log("Continuing with default teeth status values");
+            // Continue with default teeth status
+          }
           
           // Fetch patient's medical history (treatment records)
-          const historyResponse = await axios.get(`${PATIENT_API_URL}/${patientResponse.data.id}/medical_history/`);
-          setPatientHistory(historyResponse.data || []);
+          console.log(`Fetching medical history for patient ID: ${patientResponse.data.id} from ${PATIENT_API_URL}/${patientResponse.data.id}/medical_history/`);
+          
+          try {
+            const historyResponse = await axios.get(`${PATIENT_API_URL}/${patientResponse.data.id}/medical_history/`);
+            console.log("Medical history data received:", historyResponse.data);
+            setPatientHistory(historyResponse.data || []);
+          } catch (historyError) {
+            console.error("Error fetching medical history:", historyError);
+            console.log("Server response:", historyError.response?.data);
+            console.log("Continuing with empty medical history");
+            setPatientHistory([]);
+          }
           
           // Fetch patient's previous prescriptions
-          const prescriptionsResponse = await axios.get(`${PRESCRIPTION_API_URL}/?patient=${patientResponse.data.id}`);
-          setPreviousPrescriptions(prescriptionsResponse.data || []);
+          console.log(`Fetching prescriptions for patient ID: ${patientResponse.data.id} from ${PRESCRIPTION_API_URL}/?patient=${patientResponse.data.id}`);
+          
+          try {
+            const prescriptionsResponse = await axios.get(`${PRESCRIPTION_API_URL}/?patient=${patientResponse.data.id}`);
+            console.log("Prescriptions data received:", prescriptionsResponse.data);
+            setPreviousPrescriptions(prescriptionsResponse.data || []);
+          } catch (prescriptionsError) {
+            console.error("Error fetching prescriptions:", prescriptionsError);
+            console.log("Server response:", prescriptionsError.response?.data);
+            console.log("Continuing with empty prescriptions");
+            setPreviousPrescriptions([]);
+          }
+        } else {
+          console.warn("No patient ID found in appointment data");
         }
         
         // Fetch available medicines for the dropdown
-        const medicinesResponse = await axios.get(`${MEDICINE_API_URL}/?active_only=true`);
-        setMedicineList(medicinesResponse.data || []);
+        console.log(`Fetching medicines from ${MEDICINE_API_URL}/?active_only=true`);
+        
+        try {
+          const medicinesResponse = await axios.get(`${MEDICINE_API_URL}/?active_only=true`);
+          console.log("Medicines data received:", medicinesResponse.data);
+          setMedicineList(medicinesResponse.data || []);
+        } catch (medicinesError) {
+          console.error("Error fetching medicines:", medicinesError);
+          console.log("Server response:", medicinesError.response?.data);
+          console.log("Continuing with empty medicine list");
+          setMedicineList([]);
+        }
         
         setLoading(false);
       } catch (error) {
-        console.error("Error fetching appointment data:", error);
+        console.error("Main error fetching appointment data:", error);
+        console.log("Error details:", {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+          config: error.config
+        });
+        
         setLoading(false);
-        setSaveError("Failed to load appointment data. Please try again later.");
+        setSaveError(`Failed to load appointment data: ${error.message}. Please check the console for details and ensure your backend server is running.`);
       }
     };
 
     if (id) {
       fetchAppointmentData();
+    } else {
+      setLoading(false);
+      setSaveError("No appointment ID provided");
     }
   }, [id]);
 
