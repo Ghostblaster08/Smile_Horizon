@@ -171,3 +171,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',  # This allows unauthenticated access
     ],
 }
+
+# Configure port for Render deployment
+import os
+PORT = int(os.environ.get('PORT', 8000))
