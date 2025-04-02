@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./apmt_details.css";
 
 const AppointmentDetails = () => {
   const { id } = useParams(); // Get the id from the URL
   const navigate = useNavigate();
   
-  // Added console log for debugging
-  useEffect(() => {
-    console.log("Appointment ID from URL:", id);
-    // Fetch appointment data using this ID
-    // For now, we'll use sample data
-  }, [id]);
-
+  // Base API URLs
+  const APPOINTMENT_API_URL = "http://localhost:8000/appointments/api/appointments";
+  const PATIENT_API_URL = "http://localhost:8000/api/patients";
+  const PRESCRIPTION_API_URL = "http://localhost:8000/prescriptions/api/prescriptions";
+  const MEDICINE_API_URL = "http://localhost:8000/prescriptions/api/medicines";
+  const TOOTH_STATUS_API_URL = "http://localhost:8000/prescriptions/api/tooth-status";
+  
   // States for appointment and patient information
   const [appointment, setAppointment] = useState(null);
   const [patient, setPatient] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [medicineList, setMedicineList] = useState([]);
+  const [patientHistory, setPatientHistory] = useState([]);
+  const [previousPrescriptions, setPreviousPrescriptions] = useState([]);
   
   // States for dental work and prescriptions
   const [currentNotes, setCurrentNotes] = useState("");
@@ -28,85 +32,106 @@ const AppointmentDetails = () => {
   const [workToBeDone, setWorkToBeDone] = useState("");
   
   // Teeth chart state
-  const [teethStatus, setTeethStatus] = useState(Array(32).fill(""));
+  const [teethStatus, setTeethStatus] = useState(Array(32).fill("normal"));
   const [selectedTooth, setSelectedTooth] = useState(null);
+  const [saveError, setSaveError] = useState(null);
 
-  // Sample data (replace with API calls)
-  const sampleAppointment = {
-    id: "1",
-    date: "2025-04-05",
-    time: "10:00 AM",
-    reason: "Tooth pain",
-    status: "SCHEDULED",
-    patient_id: "101"
-  };
-  
-  const samplePatient = {
-    id: "101",
-    name: "John Doe",
-    age: 32,
-    gender: "Male",
-    contact: "1234567890",
-    email: "john@example.com",
-    bloodGroup: "O+",
-    allergies: "None",
-    medicalHistory: [
-      { date: "2025-03-10", diagnosis: "Cavity in molar", treatment: "Filling" },
-      { date: "2024-11-15", diagnosis: "Gum inflammation", treatment: "Scaling" }
-    ],
-    previousPrescriptions: [
-      { 
-        date: "2025-03-10", 
-        medicines: [
-          { name: "Amoxicillin", dosage: "500mg", frequency: "3 times daily", duration: "7 days" },
-          { name: "Ibuprofen", dosage: "400mg", frequency: "As needed for pain", duration: "5 days" }
-        ] 
-      },
-      { 
-        date: "2024-11-15", 
-        medicines: [
-          { name: "Chlorhexidine Mouthwash", dosage: "15ml", frequency: "Twice daily", duration: "10 days" }
-        ] 
-      }
-    ]
-  };
-  
-  // Sample medicine list
-  const medicineList = [
-    "Amoxicillin", "Ibuprofen", "Paracetamol", "Metronidazole", 
-    "Chlorhexidine Mouthwash", "Lidocaine Gel", "Prednisolone", 
-    "Acetaminophen", "Codeine", "Doxycycline"
-  ];
-
-  // Fetch appointment and patient data
+  // Fetch appointment data
   useEffect(() => {
-    // In a real app, replace with API calls
-    setTimeout(() => {
-      setAppointment(sampleAppointment);
-      setPatient(samplePatient);
-      setLoading(false);
-    }, 500);
+    const fetchAppointmentData = async () => {
+      setLoading(true);
+      try {
+        // Fetch the appointment details
+        const appointmentResponse = await axios.get(`${APPOINTMENT_API_URL}/${id}/`);
+        setAppointment(appointmentResponse.data);
+        
+        // Fetch the patient details using the patient_id from the appointment
+        if (appointmentResponse.data.patient) {
+          const patientResponse = await axios.get(`${PATIENT_API_URL}/${appointmentResponse.data.patient}/`);
+          setPatient(patientResponse.data);
+          
+          // Fetch the patient's teeth status
+          const teethStatusResponse = await axios.get(`${TOOTH_STATUS_API_URL}/patient/?patient_id=${patientResponse.data.id}`);
+          
+          // Initialize teeth status array with defaults
+          const initialTeethStatus = Array(32).fill("normal");
+          
+          // Update with data from the API
+          teethStatusResponse.data.forEach(tooth => {
+            initialTeethStatus[tooth.tooth_number - 1] = tooth.status;
+          });
+          
+          setTeethStatus(initialTeethStatus);
+          
+          // Fetch patient's medical history (treatment records)
+          const historyResponse = await axios.get(`${PATIENT_API_URL}/${patientResponse.data.id}/medical_history/`);
+          setPatientHistory(historyResponse.data || []);
+          
+          // Fetch patient's previous prescriptions
+          const prescriptionsResponse = await axios.get(`${PRESCRIPTION_API_URL}/?patient=${patientResponse.data.id}`);
+          setPreviousPrescriptions(prescriptionsResponse.data || []);
+        }
+        
+        // Fetch available medicines for the dropdown
+        const medicinesResponse = await axios.get(`${MEDICINE_API_URL}/?active_only=true`);
+        setMedicineList(medicinesResponse.data || []);
+        
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching appointment data:", error);
+        setLoading(false);
+        setSaveError("Failed to load appointment data. Please try again later.");
+      }
+    };
+
+    if (id) {
+      fetchAppointmentData();
+    }
   }, [id]);
 
   const handleToothClick = (index) => {
     setSelectedTooth(index);
   };
 
-  const handleStatusChange = (status) => {
-    const updatedTeethStatus = [...teethStatus];
-    updatedTeethStatus[selectedTooth] = status;
-    setTeethStatus(updatedTeethStatus);
+  // Update tooth status with API call
+  const handleStatusChange = async (status) => {
+    if (!patient) return;
+    
+    try {
+      const updatedTeethStatus = [...teethStatus];
+      updatedTeethStatus[selectedTooth] = status;
+      setTeethStatus(updatedTeethStatus);
+
+      // Update tooth status in the backend
+      await axios.post(`${TOOTH_STATUS_API_URL}/update/`, {
+        patient_id: patient.id,
+        tooth_number: selectedTooth + 1,
+        status: status,
+        notes: `Updated during appointment on ${new Date().toISOString().split('T')[0]}`
+      });
+    } catch (error) {
+      console.error("Error updating tooth status:", error);
+      // Revert UI change if API call fails
+      const oldStatus = [...teethStatus];
+      setTeethStatus(oldStatus);
+      setSaveError("Failed to update tooth status. Please try again.");
+    }
   };
 
   const handleAddMedicine = () => {
     if (selectedMedicine && dosage && frequency && duration) {
+      // If selectedMedicine is an object (from API), get its name or id
+      const medicineValue = typeof selectedMedicine === 'object' ? 
+        selectedMedicine.name : selectedMedicine;
+      
       const newMedicine = {
-        name: selectedMedicine,
+        name: medicineValue,
         dosage,
         frequency,
         duration
       };
       setNewPrescription([...newPrescription, newMedicine]);
+      
       // Reset form
       setSelectedMedicine("");
       setDosage("");
@@ -121,11 +146,63 @@ const AppointmentDetails = () => {
     setNewPrescription(updatedPrescription);
   };
 
-  const handleSaveAppointment = () => {
-    // Here you would save all the data to your backend
-    // For now, we'll just show an alert
-    alert("Appointment details saved successfully!");
-    navigate("/appointments"); // Redirect to appointments list
+  // Save all appointment details including prescription
+  const handleSaveAppointment = async () => {
+    if (!patient || !appointment) {
+      setSaveError("Patient or appointment information is missing.");
+      return;
+    }
+    
+    setSaveError(null);
+    setLoading(true);
+    
+    try {
+      // Step 1: Update appointment notes
+      await axios.patch(`${APPOINTMENT_API_URL}/${id}/`, {
+        notes: currentNotes,
+        status: 'COMPLETED' // Optionally update the appointment status
+      });
+      
+      // Step 2: Create a new prescription if there are medicines or notes
+      if (newPrescription.length > 0 || currentNotes || workToBeDone) {
+        // Create the prescription
+        const prescriptionResponse = await axios.post(`${PRESCRIPTION_API_URL}/create_from_treatment/`, {
+          patient_id: patient.id,
+          prescription: currentNotes,
+          work_done: "",
+          pending_work: workToBeDone,
+          appointment_id: id
+        });
+        
+        // For each medicine in the new prescription, add it to the created prescription
+        for (const medicine of newPrescription) {
+          await axios.post(`${PRESCRIPTION_API_URL}/${prescriptionResponse.data.id}/add_medicine/`, {
+            medicine_name: medicine.name,
+            dosage: medicine.dosage,
+            frequency: medicine.frequency,
+            duration: medicine.duration
+          });
+        }
+      }
+      
+      // If a tooth is selected, make sure its status is recorded with the appointment
+      if (selectedTooth !== null) {
+        await axios.post(`${TOOTH_STATUS_API_URL}/update/`, {
+          patient_id: patient.id,
+          tooth_number: selectedTooth + 1,
+          status: teethStatus[selectedTooth],
+          notes: `Updated during appointment ${id} on ${new Date().toISOString().split('T')[0]}`
+        });
+      }
+      
+      setLoading(false);
+      alert("Appointment details saved successfully!");
+      navigate("/appointments"); // Redirect to appointments list
+    } catch (error) {
+      console.error("Error saving appointment details:", error);
+      setLoading(false);
+      setSaveError("Failed to save appointment details. Please try again.");
+    }
   };
 
   if (loading) {
@@ -136,83 +213,114 @@ const AppointmentDetails = () => {
     <div className="appointment-details-container">
       <h1>Appointment Details</h1>
       <p>Viewing details for appointment ID: {id}</p>
+      
+      {saveError && (
+        <div className="error-message">
+          {saveError}
+        </div>
+      )}
+      
       <div className="appointment-header">
         <div className="appointment-meta">
-          <p><strong>Date:</strong> {appointment.date}</p>
-          <p><strong>Time:</strong> {appointment.time}</p>
-          <p><strong>Reason:</strong> {appointment.reason}</p>
-          <p><strong>Status:</strong> <span className={`status-${appointment.status.toLowerCase()}`}>{appointment.status}</span></p>
+          <p><strong>Date:</strong> {appointment?.date || 'N/A'}</p>
+          <p><strong>Time:</strong> {appointment?.time || 'N/A'}</p>
+          <p><strong>Reason:</strong> {appointment?.reason || 'N/A'}</p>
+          <p>
+            <strong>Status:</strong> 
+            <span className={`status-${appointment?.status?.toLowerCase() || 'unknown'}`}>
+              {appointment?.status || 'UNKNOWN'}
+            </span>
+          </p>
         </div>
       </div>
 
       <div className="patient-card">
         <h2>Patient Information</h2>
-        <div className="patient-info">
-          <div className="info-column">
-            <p><strong>Name:</strong> {patient.name}</p>
-            <p><strong>Age:</strong> {patient.age}</p>
-            <p><strong>Gender:</strong> {patient.gender}</p>
+        {patient ? (
+          <div className="patient-info">
+            <div className="info-column">
+              <p><strong>Name:</strong> {patient.first_name} {patient.last_name}</p>
+              <p><strong>Age:</strong> {patient.age || 'N/A'}</p>
+              <p><strong>Gender:</strong> {patient.gender || 'N/A'}</p>
+            </div>
+            <div className="info-column">
+              <p><strong>Contact:</strong> {patient.phone_number || 'N/A'}</p>
+              <p><strong>Email:</strong> {patient.email || 'N/A'}</p>
+              <p><strong>Blood Group:</strong> {patient.blood_group || 'N/A'}</p>
+            </div>
+            <div className="info-column">
+              <p><strong>Allergies:</strong> {patient.allergies || 'None'}</p>
+              <p><strong>Existing Conditions:</strong> {patient.existing_conditions || 'None'}</p>
+            </div>
           </div>
-          <div className="info-column">
-            <p><strong>Contact:</strong> {patient.contact}</p>
-            <p><strong>Email:</strong> {patient.email}</p>
-            <p><strong>Blood Group:</strong> {patient.bloodGroup}</p>
-          </div>
-          <div className="info-column">
-            <p><strong>Allergies:</strong> {patient.allergies}</p>
-          </div>
-        </div>
+        ) : (
+          <p>No patient information available</p>
+        )}
       </div>
 
       <div className="previous-treatments">
         <h2>Medical History</h2>
         <div className="history-cards">
-          {patient.medicalHistory.map((record, index) => (
-            <div key={index} className="history-card">
-              <div className="card-header">
-                <span className="date">{record.date}</span>
+          {patientHistory.length > 0 ? (
+            patientHistory.map((record, index) => (
+              <div key={index} className="history-card">
+                <div className="card-header">
+                  <span className="date">{record.treatment_date || 'N/A'}</span>
+                </div>
+                <div className="card-body">
+                  <p><strong>Diagnosis:</strong> {record.diagnosis || 'N/A'}</p>
+                  <p><strong>Treatment:</strong> {record.treatment || 'N/A'}</p>
+                  <p><strong>Notes:</strong> {record.notes || 'None'}</p>
+                </div>
               </div>
-              <div className="card-body">
-                <p><strong>Diagnosis:</strong> {record.diagnosis}</p>
-                <p><strong>Treatment:</strong> {record.treatment}</p>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No previous medical history available</p>
+          )}
         </div>
       </div>
 
       <div className="previous-prescriptions">
         <h2>Previous Prescriptions</h2>
         <div className="prescription-cards">
-          {patient.previousPrescriptions.map((prescription, index) => (
-            <div key={index} className="prescription-card">
-              <div className="card-header">
-                <span className="date">{prescription.date}</span>
+          {previousPrescriptions.length > 0 ? (
+            previousPrescriptions.map((prescription, index) => (
+              <div key={index} className="prescription-card">
+                <div className="card-header">
+                  <span className="date">{prescription.prescription_date || 'N/A'}</span>
+                </div>
+                <div className="card-body">
+                  <p><strong>Notes:</strong> {prescription.notes || 'None'}</p>
+                  {prescription.prescribed_medicines && prescription.prescribed_medicines.length > 0 ? (
+                    <table className="medicine-table">
+                      <thead>
+                        <tr>
+                          <th>Medicine</th>
+                          <th>Dosage</th>
+                          <th>Frequency</th>
+                          <th>Duration</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {prescription.prescribed_medicines.map((medicine, midx) => (
+                          <tr key={midx}>
+                            <td>{medicine.medicine_name}</td>
+                            <td>{medicine.dosage}</td>
+                            <td>{medicine.frequency}</td>
+                            <td>{medicine.duration}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <p>No medicines in this prescription</p>
+                  )}
+                </div>
               </div>
-              <div className="card-body">
-                <table className="medicine-table">
-                  <thead>
-                    <tr>
-                      <th>Medicine</th>
-                      <th>Dosage</th>
-                      <th>Frequency</th>
-                      <th>Duration</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {prescription.medicines.map((medicine, midx) => (
-                      <tr key={midx}>
-                        <td>{medicine.name}</td>
-                        <td>{medicine.dosage}</td>
-                        <td>{medicine.frequency}</td>
-                        <td>{medicine.duration}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No previous prescriptions available</p>
+          )}
         </div>
       </div>
 
@@ -228,7 +336,6 @@ const AppointmentDetails = () => {
               >
                 <span className="tooth-number">{index + 1}</span>
                 <div className="tooth-graphic">
-                  {/* Use SVG or an image here */}
                   <div className={`tooth-icon ${status || 'normal'}`}></div>
                 </div>
               </div>
@@ -242,7 +349,6 @@ const AppointmentDetails = () => {
                 onClick={() => handleToothClick(index + 16)}
               >
                 <div className="tooth-graphic">
-                  {/* Use SVG or an image here */}
                   <div className={`tooth-icon ${status || 'normal'}`}></div>
                 </div>
                 <span className="tooth-number">{index + 17}</span>
@@ -257,7 +363,7 @@ const AppointmentDetails = () => {
               value={teethStatus[selectedTooth]}
               onChange={(e) => handleStatusChange(e.target.value)}
             >
-              <option value="">Normal</option>
+              <option value="normal">Normal</option>
               <option value="filling">Filling</option>
               <option value="extraction">Extraction Needed</option>
               <option value="missing">Missing</option>
@@ -297,12 +403,17 @@ const AppointmentDetails = () => {
             <div className="form-group">
               <label>Medicine</label>
               <select 
-                value={selectedMedicine} 
-                onChange={(e) => setSelectedMedicine(e.target.value)}
+                value={selectedMedicine.id || selectedMedicine} 
+                onChange={(e) => {
+                  const selected = medicineList.find(m => m.id.toString() === e.target.value) || e.target.value;
+                  setSelectedMedicine(selected);
+                }}
               >
                 <option value="">Select Medicine</option>
-                {medicineList.map((medicine, index) => (
-                  <option key={index} value={medicine}>{medicine}</option>
+                {medicineList.map((medicine) => (
+                  <option key={medicine.id} value={medicine.id}>
+                    {medicine.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -379,8 +490,12 @@ const AppointmentDetails = () => {
         <button className="cancel-btn" onClick={() => navigate("/appointments")}>
           Cancel
         </button>
-        <button className="save-btn" onClick={handleSaveAppointment}>
-          Save Appointment Details
+        <button 
+          className="save-btn" 
+          onClick={handleSaveAppointment}
+          disabled={loading}
+        >
+          {loading ? "Saving..." : "Save Appointment Details"}
         </button>
       </div>
     </div>

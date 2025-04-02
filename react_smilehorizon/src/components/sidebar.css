@@ -1,7 +1,7 @@
 /* Sidebar dimensions and colors */
 :root {
-  --sidebar-collapsed: 80px !important;
-  --sidebar-expanded: 220px !important;
+  --sidebar-collapsed: 80px;
+  --sidebar-expanded: 220px;
   --primary-color: #2c9c94;
   --text-color: white;
   --transition-time: 0.3s;
@@ -9,21 +9,26 @@
 
 /* Base sidebar styles */
 .sidebar {
-  width: 250px;
-  height: 100vh;
-  background-color: #2E8B57;
-  color: white;
+  width: var(--sidebar-collapsed) !important; /* Critical for initial state */
+  height: 100vh !important; /* Must stay full height */
+  position: fixed !important; /* Must stay fixed */
+  background-color: var(--primary-color) !important; /* Core styling */
+  transition: width var(--transition-time) ease !important; /* Required for animation */
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  position: fixed;
-  left: 0;
-  top: 0;
-  z-index: 100;
+  justify-content: space-between;
+  z-index: 1000;
 }
 
+/* Expanded state */
+.sidebar:hover {
+  width: var(--sidebar-expanded) !important; /* Must override collapsed width */
+}
+
+/* Menu items container */
 .sidebar-content {
-  flex: 1;
-  padding: 2rem 0;
+  padding-top: 20px;
 }
 
 .sidebar ul {
@@ -32,99 +37,104 @@
   margin: 0;
 }
 
+/* Individual menu items */
 .sidebar li {
-  margin: 1.5rem 0;
+  width: 100%;
+  position: relative;
 }
 
-.sidebar a {
-  color: white;
-  text-decoration: none;
-  font-size: 1.2rem;
-  padding: 0.8rem 1.5rem;
-  display: flex;
+.sidebar li a {
+  display: flex !important; /* Critical for layout */
   align-items: center;
-  transition: background-color 0.3s, transform 0.2s;
+  color: var(--text-color) !important; /* Core styling */
+  text-decoration: none !important; /* Must remove underline */
+  padding: 12px 0;
+  transition: background-color 0.2s;
+  white-space: nowrap;
 }
 
-.sidebar a:hover {
-  background-color: #237a73;
-  border-radius: 8px;
-  transform: translateX(5px);
+/* Hover effect on menu items */
+.sidebar li a:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important; /* Visual feedback */
 }
 
+/* Icon styling - now perfectly centered */
 .icon {
-  margin-right: 12px;
-  font-size: 1.2rem;
+  width: var(--sidebar-collapsed) !important; /* Must match sidebar width */
+  display: flex !important; /* Critical for centering */
+  justify-content: center !important; /* Force horizontal center */
+  align-items: center !important; /* Force vertical center */
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  padding-right: 33px;
 }
 
+/* Text label styling */
 .link-text {
-  font-weight: 500;
+  opacity: 0;
+  transform: translateX(-10px);
+  transition: 
+    opacity var(--transition-time),
+    transform var(--transition-time);
+  font-size: 0.95rem;
+}
+
+/* Expanded state styles */
+.sidebar:hover .link-text {
+  opacity: 1 !important; /* Must override hidden state */
+  transform: translateX(0) !important; /* Must override slide-out */
+  margin-left: 8px;
 }
 
 /* Copyright section */
 .copyright {
-  padding: 1rem;
+  padding: 15px 0;
   text-align: center;
-  font-size: 0.8rem;
-  opacity: 0.8;
-  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .sidebar {
-    width: 70px;
+  :root {
+    --sidebar-collapsed: 70px;
   }
   
   .sidebar:hover {
-    width: 200px;
-  }
-  
-  .icon {
-    min-width: 70px;
+    width: 200px !important; /* Must override desktop expansion */
   }
 }
 
 @media (max-width: 480px) {
   .sidebar {
-    width: 100%;
-    height: auto;
-    bottom: 0;
-    flex-direction: row;
-  }
-  
-  .sidebar-content {
-    width: 100%;
+    width: 100% !important; /* Must override all other states */
+    height: auto !important; /* Must override full height */
+    bottom: 0 !important; /* Anchor to bottom */
+    flex-direction: row !important; /* Change layout */
   }
   
   .sidebar ul {
-    display: flex;
-  }
-  
-  .sidebar li {
-    flex: 1;
+    display: flex !important; /* Change to horizontal layout */
   }
   
   .sidebar li a {
-    flex-direction: column;
-    padding: 10px 5px;
-    font-size: 0.8rem;
+    flex-direction: column !important; /* Stack icon/text */
   }
   
   .icon {
-    min-width: auto;
+    width: auto !important; /* Release fixed width */
     margin-bottom: 5px;
-    font-size: 1.2rem;
   }
   
   .link-text {
-    opacity: 1;
-    transform: none;
-    margin-left: 0;
+    opacity: 1 !important; /* Force visible on mobile */
+    transform: none !important; /* Remove animation */
+    margin-left: 0 !important; /* Reset spacing */
     font-size: 0.7rem;
   }
   
   .copyright {
-    display: none;
+    display: none !important; /* Hide on mobile */
   }
 }
