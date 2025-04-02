@@ -21,7 +21,7 @@ SECRET_KEY = 'django-insecure-123456789abcdefghijklmnopqrstuvwxyz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['smile-horizon.onrender.com']
 
 # Application definition
 INSTALLED_APPS = [
