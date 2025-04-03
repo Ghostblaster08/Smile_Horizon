@@ -66,6 +66,13 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+.appointment-info{
+  button{
+    text-align: left !important;
+    /* font-weight: bold; */
+  }
+}
+
 .delete-btn {
   padding: 5px 10px;
   background-color: #d9534f;

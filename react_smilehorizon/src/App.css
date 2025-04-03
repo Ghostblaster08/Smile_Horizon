@@ -560,6 +560,12 @@ html, body {
   transition: background-color 0.3s;
 }
 
+.patient-name-button {
+  button{
+   text-align: left !important; 
+  }
+}
+
 .submit-btn:hover {
   background-color: #237a73;
 }
