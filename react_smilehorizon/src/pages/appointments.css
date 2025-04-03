@@ -15,6 +15,7 @@
   flex-direction: column;
   gap: 10px;
   margin-bottom: 20px;
+  
 }
 
 .appointment-form input {
@@ -36,6 +37,13 @@
   background-color: #237a73;
 }
 
+.appointment-form select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
 .appointment-list {
   list-style: none;
   padding: 0;
@@ -45,10 +53,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  padding: 15px;
   margin-bottom: 10px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.appointment-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .delete-btn {
@@ -63,7 +78,6 @@
 .delete-btn:hover {
   background-color: #c9302c;
 }
-/* Add these styles to your appointments.css file */
 
 .patient-name-link {
   color: #2196f3;
@@ -95,19 +109,78 @@
   background-color: #0d8bf2;
 }
 
-.appointment-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  margin-bottom: 10px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+/* Status badge styles */
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: capitalize;
 }
 
-.appointment-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+.status-scheduled {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.status-confirmed {
+  background-color: #5bc0de;
+  color: white;
+}
+
+.status-completed {
+  background-color: #5cb85c;
+  color: white;
+}
+
+.status-cancelled {
+  background-color: #d9534f;
+  color: white;
+}
+
+.status-no-show {
+  background-color: #777;
+  color: white;
+}
+
+/* Appointment info layout */
+.appointment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.appointment-date-time {
+  font-weight: bold;
+  color: #555;
+}
+
+.appointment-reason {
+  margin-top: 5px;
+}
+
+.appointment-reason .label {
+  font-weight: bold;
+}
+
+/* Loading and error states */
+.loading, .error-message {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2rem;
+}
+
+.error-message {
+  color: #d9534f;
+  background-color: rgba(217, 83, 79, 0.1);
+  border-radius: 5px;
+  border: 1px solid rgba(217, 83, 79, 0.3);
+}
+
+.no-appointments {
+  text-align: center;
+  padding: 20px;
+  color: #777;
+  font-style: italic;
 }

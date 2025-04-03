@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import "./patientlist.css"; // Import CSS for styling
+import { Link, useNavigate } from "react-router-dom"; // Import Link and useNavigate
+import "./patientlist.css";
 
 const API_URL = "http://127.0.0.1:8000/api/patients/"; // Update if necessary
 
@@ -12,9 +13,10 @@ const PatientList = () => {
     last_name: "",
     age: "",
     contact_number: "",
-    gender: "", // Add gender to the state
+    gender: "",
   });
   const [editingPatient, setEditingPatient] = useState(null);
+  const navigate = useNavigate(); // Initialize the navigation hook
 
   // Fetch patients from backend
   const fetchPatients = async () => {
@@ -54,7 +56,7 @@ const PatientList = () => {
         last_name: "",
         age: "",
         contact_number: "",
-        gender: "", // Reset gender
+        gender: "",
       });
     } catch (error) {
       console.error("Error adding patient:", error.response?.data || error.message);
@@ -69,7 +71,7 @@ const PatientList = () => {
       last_name: patient.last_name || "",
       age: patient.age,
       contact_number: patient.contact_number,
-      gender: patient.gender || "", // Set the gender from patient data
+      gender: patient.gender || "",
     });
   };
 
@@ -96,7 +98,7 @@ const PatientList = () => {
         last_name: "",
         age: "",
         contact_number: "",
-        gender: "", // Reset gender
+        gender: "",
       });
     } catch (error) {
       console.error("Error updating patient:", error.response?.data || error.message);
@@ -111,6 +113,11 @@ const PatientList = () => {
     } catch (error) {
       console.error("Error deleting patient:", error.response?.data || error.message);
     }
+  };
+
+  // Handle patient name click to navigate to details page
+  const handlePatientNameClick = (patientId) => {
+    navigate(`/patientdetails/${patientId}`); // Using path parameters instead of query parameters
   };
 
   // Filter patients by search term (first name + last name)
@@ -202,8 +209,18 @@ const PatientList = () => {
           {filteredPatients.length ? (
             filteredPatients.map((patient) => (
               <tr key={patient.id}>
-                <td>{patient.first_name}</td>
-                <td>{patient.last_name}</td>
+                <td 
+                  className="patient-name-cell"
+                  onClick={() => handlePatientNameClick(patient.id)}
+                >
+                  <span className="patient-name-link">{patient.first_name}</span>
+                </td>
+                <td 
+                  className="patient-name-cell"
+                  onClick={() => handlePatientNameClick(patient.id)}
+                >
+                  <span className="patient-name-link">{patient.last_name}</span>
+                </td>
                 <td>{patient.age}</td>
                 <td>{patient.gender}</td>
                 <td>{patient.contact_number}</td>
@@ -225,7 +242,7 @@ const PatientList = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="5">No patients found.</td>
+              <td colSpan="6">No patients found.</td>
             </tr>
           )}
         </tbody>

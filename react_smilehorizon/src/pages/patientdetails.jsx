@@ -63,15 +63,41 @@ const PatientDetails = () => {
   const fetchPatientDetails = async (patientId) => {
     try {
       setLoading(true);
+      
+      // Fetch basic patient data
       const response = await axios.get(`${API_URL}${patientId}/`);
       setSelectedPatient(response.data);
       
       // Fetch teeth status
       await fetchPatientTeethStatus(patientId);
       
+      // Set existing medical histories and medications
       setMedicalHistories(response.data.medical_histories || []);
       setMedications(response.data.medications || []);
       setDocuments(response.data.documents || []);
+      
+      // Fetch prescriptions if not included in patient data
+      if (!response.data.prescriptions) {
+        try {
+          const prescriptionsResponse = await axios.get(
+            `http://localhost:8000/prescriptions/api/prescriptions/?patient=${patientId}`
+          );
+          
+          // Sort prescriptions by date (newest first)
+          const sortedPrescriptions = prescriptionsResponse.data.sort((a, b) => {
+            return new Date(b.prescription_date) - new Date(a.prescription_date);
+          });
+          
+          // Update patient object with prescriptions
+          setSelectedPatient(prev => ({
+            ...prev,
+            prescriptions: sortedPrescriptions
+          }));
+        } catch (prescriptionsError) {
+          console.error("Error fetching prescriptions:", prescriptionsError);
+        }
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error("Error fetching patient details:", error);
@@ -254,6 +280,28 @@ const PatientDetails = () => {
                     </span>
                   </td>
                 </tr>
+                
+                {/* New rows for prescription history from most recent prescription */}
+                {selectedPatient.prescriptions && selectedPatient.prescriptions.length > 0 && (
+                  <>
+                    <tr>
+                      <th>Latest Prescription</th>
+                      <td colSpan="3">{selectedPatient.prescriptions[0].prescription || "No prescription details"}</td>
+                    </tr>
+                    <tr>
+                      <th>Work Done</th>
+                      <td colSpan="3">{selectedPatient.prescriptions[0].work_done || "No work recorded"}</td>
+                    </tr>
+                    <tr>
+                      <th>Pending Work</th>
+                      <td colSpan="3">{selectedPatient.prescriptions[0].pending_work || "No pending work"}</td>
+                    </tr>
+                    <tr>
+                      <th>Post-Treatment</th>
+                      <td colSpan="3">{selectedPatient.prescriptions[0].post_medication || "No post-treatment medication"}</td>
+                    </tr>
+                  </>
+                )}
               </tbody>
             </table>
           </div>
@@ -272,6 +320,58 @@ const PatientDetails = () => {
                       <p><strong>Condition:</strong> {history.condition}</p>
                       <p><strong>Treatment:</strong> {history.treatment}</p>
                       {history.notes && <p><strong>Notes:</strong> {history.notes}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Prescription history section */}
+          {selectedPatient.prescriptions && selectedPatient.prescriptions.length > 0 && (
+            <div className="prescription-history-section">
+              <h2>Prescription History</h2>
+              <div className="prescription-cards">
+                {selectedPatient.prescriptions.map((prescription, index) => (
+                  <div key={index} className="prescription-card">
+                    <div className="card-header">
+                      <h3>Prescription on {new Date(prescription.prescription_date).toLocaleDateString()}</h3>
+                    </div>
+                    <div className="card-body">
+                      {prescription.prescription && (
+                        <div className="prescription-item">
+                          <h4>Prescription Details</h4>
+                          <p>{prescription.prescription}</p>
+                        </div>
+                      )}
+                      
+                      {prescription.work_done && (
+                        <div className="prescription-item">
+                          <h4>Work Performed</h4>
+                          <p>{prescription.work_done}</p>
+                        </div>
+                      )}
+                      
+                      {prescription.pending_work && (
+                        <div className="prescription-item">
+                          <h4>Pending Work</h4>
+                          <p>{prescription.pending_work}</p>
+                        </div>
+                      )}
+                      
+                      {prescription.post_medication && (
+                        <div className="prescription-item">
+                          <h4>Post-Treatment Medication</h4>
+                          <p>{prescription.post_medication}</p>
+                        </div>
+                      )}
+                      
+                      {prescription.treated_tooth_number && (
+                        <div className="prescription-item">
+                          <h4>Treated Tooth</h4>
+                          <p>Tooth #{prescription.treated_tooth_number} - Status: {prescription.tooth_status || "Not specified"}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

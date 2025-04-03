@@ -25,13 +25,12 @@ class Appointment(models.Model):
         ('NO_SHOW', 'No Show'),
     )
     
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='appointments')
+    patient = models.ForeignKey('Patient.Patient', on_delete=models.CASCADE)
     appointment_date = models.DateField()
     appointment_time = models.TimeField()
-    treatment_type = models.ForeignKey(TreatmentType, on_delete=models.SET_NULL, null=True, related_name='appointments')
     reason = models.TextField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='SCHEDULED')
-    notes = models.TextField(blank=True)
+    notes = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

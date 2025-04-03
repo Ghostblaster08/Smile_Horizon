@@ -267,6 +267,65 @@ textarea:focus {
   transform: translateY(0);
 }
 
+/* ===== Prescription History Section ===== */
+.prescription-history-section {
+  margin-top: 30px;
+  width: 100%;
+}
+
+.prescription-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.prescription-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+.prescription-card .card-header {
+  background-color: #2E8B57;
+  color: white;
+  padding: 12px 15px;
+}
+
+.prescription-card .card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.prescription-card .card-body {
+  padding: 15px;
+}
+
+.prescription-item {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.prescription-item:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.prescription-item h4 {
+  color: #2E8B57;
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+}
+
+.prescription-item p {
+  margin: 0;
+  color: #333;
+  white-space: pre-line;
+}
+
 /* ===== Responsive Adjustments ===== */
 @media (max-width: 768px) {
   .search-panel input {
@@ -293,4 +352,11 @@ textarea:focus {
     font-size: 0.6rem;
   }
   
+  .prescription-card .card-header h3 {
+    font-size: 1rem;
+  }
+  
+  .prescription-item h4 {
+    font-size: 0.9rem;
+  }
 }
