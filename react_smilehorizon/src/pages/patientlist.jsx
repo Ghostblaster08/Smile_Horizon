@@ -15,7 +15,7 @@ const PatientList = () => {
     contact_number: "",
     gender: "",
   });
-  const [editingPatient, setEditingPatient] = useState(null);
+  const [editingPatient, setEditingPatient] = useState(null); 
   const navigate = useNavigate(); // Initialize the navigation hook
 
   // Fetch patients from backend
