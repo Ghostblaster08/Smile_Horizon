@@ -118,26 +118,33 @@ const PatientDetails = () => {
   // Add a function to fetch tooth status when patient is selected
   const fetchPatientTeethStatus = async (patientId) => {
     try {
+      // Change the URL from tooth-status to tooth_status
       const response = await axios.get(
-        `http://localhost:8000/prescriptions/api/tooth-status/patient/?patient_id=${patientId}`
+        `${API_URL}${patientId}/tooth_status/`
       );
-
+      
+      // Log the response to debug
+      console.log("Tooth status response:", response.data);
+      
       // Convert to array for tooth chart
       const teethData = Array(32).fill("normal");
-      response.data.forEach((tooth) => {
-        teethData[tooth.tooth_number - 1] = tooth.status;
-      });
+      if (response.data && response.data.length) {
+        response.data.forEach((tooth) => {
+          teethData[tooth.tooth_number - 1] = tooth.status;
+        });
+      }
 
       setTeethStatus(teethData);
     } catch (error) {
       console.error("Error fetching teeth status:", error);
+      // Continue without failing - default to normal teeth
     }
   };
 
   // Handle tooth selection
   const handleToothClick = (index) => {
     setSelectedTooth(index);
-    };
+  };
 
   // Update tooth status
   const handleStatusChange = async (status) => {
@@ -149,11 +156,10 @@ const PatientDetails = () => {
       updatedTeethStatus[selectedTooth] = status;
       setTeethStatus(updatedTeethStatus);
 
-      // Update tooth status using the new endpoint
+      // Change to update_tooth_status
       await axios.post(
-        "http://localhost:8000/prescriptions/api/tooth-status/update/",
+        `${API_URL}${selectedPatient.id}/update_tooth_status/`,
         {
-          patient_id: selectedPatient.id,
           tooth_number: selectedTooth + 1,
           status: status,
           notes: `Status updated to ${status} on ${new Date().toLocaleDateString()}`,
@@ -188,7 +194,7 @@ const PatientDetails = () => {
       // If there's prescription data, create a prescription
       if (prescription || workDone || pendingWork || postMedication) {
         try {
-          // Include tooth data if a tooth is selected
+          // Create prescription but don't include tooth data - it's stored in patient model
           const prescriptionData = {
             patient_id: selectedPatient.id,
             prescription: prescription,
@@ -197,13 +203,13 @@ const PatientDetails = () => {
             post_medication: postMedication,
           };
 
-          // Add tooth information if a tooth is selected
+          // Still reference the treated tooth in prescription, but status is stored separately
           if (selectedTooth !== null) {
             prescriptionData.treated_tooth_number = selectedTooth + 1;
-            prescriptionData.tooth_status = teethStatus[selectedTooth];
+            // No need to include tooth_status as it's already saved to patient model
           }
 
-          // Use the correct API endpoint
+          // Create prescription
           const prescriptionResponse = await axios.post(
             "http://localhost:8000/prescriptions/api/prescriptions/create_from_treatment/",
             prescriptionData,
@@ -227,7 +233,6 @@ const PatientDetails = () => {
         } catch (prescriptionError) {
           console.error("Error creating prescription:", prescriptionError);
           console.error("Response data:", prescriptionError.response?.data);
-          console.error("Status code:", prescriptionError.response?.status);
           alert(
             `Failed to create prescription: ${
               prescriptionError.response?.data?.error || prescriptionError.message

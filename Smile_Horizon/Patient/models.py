@@ -75,34 +75,31 @@ class Medication(models.Model):
     class Meta:
         ordering = ['-prescribed_date']
 
-# class Document(models.Model):
-#     """
-#     Model to store patient documents (reports, x-rays, etc.)
-#     """
-#     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='documents')
-#     title = models.CharField(max_length=200)
-#     file = models.FileField(upload_to='patient_documents/')
-#     document_type = models.CharField(max_length=50)  # X-ray, Report, etc.
-#     upload_date = models.DateTimeField(auto_now_add=True)
-#     notes = models.TextField(blank=True)
-    
-#     def __str__(self):
-#         return self.title
-    
-class TeethStatus(models.Model):
+class Document(models.Model):
     """
-    Tracks the status of individual teeth for a patient
+    Model to store patient documents (reports, x-rays, etc.)
     """
-    STATUS_CHOICES = (
-        ('normal', 'Normal'),
-        ('filling', 'Filling'),
-        ('extraction', 'Extraction'),
-        ('missing', 'Missing'),
-    )
-
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='patient_teeth_status')
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='documents')
+    title = models.CharField(max_length=200)
+    file = models.FileField(upload_to='patient_documents/')
+    document_type = models.CharField(max_length=50)  # X-ray, Report, etc.
+    upload_date = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+    
+    def __str__(self):
+        return self.title
+    
+# Patient/models.py - Add this model
+class ToothStatus(models.Model):
+    patient = models.ForeignKey('Patient', related_name='teeth_status', on_delete=models.CASCADE)
     tooth_number = models.IntegerField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='normal')
+    status = models.CharField(max_length=20, default='normal')
+    notes = models.TextField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ['patient', 'tooth_number']
+        ordering = ['tooth_number']
+    
     def __str__(self):
         return f"Tooth {self.tooth_number} - {self.status} ({self.patient})"
