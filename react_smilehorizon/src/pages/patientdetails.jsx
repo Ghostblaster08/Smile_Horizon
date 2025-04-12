@@ -137,7 +137,7 @@ const PatientDetails = () => {
   // Handle tooth selection
   const handleToothClick = (index) => {
     setSelectedTooth(index);
-  };
+    };
 
   // Update tooth status
   const handleStatusChange = async (status) => {
@@ -248,6 +248,27 @@ const PatientDetails = () => {
     }
   };
 
+  // Add this useEffect to match heights
+  useEffect(() => {
+    const matchHeights = () => {
+      const personalInfoEl = document.querySelector('.personal-info');
+      const prescriptionSidebar = document.querySelector('.prescription-history-sidebar');
+      
+      if (personalInfoEl && prescriptionSidebar) {
+        const infoHeight = personalInfoEl.offsetHeight;
+        document.documentElement.style.setProperty('--personal-info-height', `${infoHeight}px`);
+      }
+    };
+    
+    // Match heights after render and when window resizes
+    matchHeights();
+    window.addEventListener('resize', matchHeights);
+    
+    return () => {
+      window.removeEventListener('resize', matchHeights);
+    };
+  }, [selectedPatient]);
+
   // Show search only when no ID is provided in URL
   const renderSearchBar = () => {
     if (!id) {
@@ -273,140 +294,104 @@ const PatientDetails = () => {
 
       {selectedPatient && (
         <div className="patient-details">
-          <div className="personal-info">
-            <h2>Personal Information</h2>
-            <table className="patient-table">
-              <tbody>
-                <tr>
-                  <th>Name</th>
-                  <td>
-                    {selectedPatient.first_name} {selectedPatient.last_name}
-                  </td>
-                  <th>Age</th>
-                  <td>{selectedPatient.age}</td>
-                </tr>
-                <tr>
-                  <th>Gender</th>
-                  <td>
-                    {selectedPatient.gender === "M"
-                      ? "Male"
-                      : selectedPatient.gender === "F"
-                      ? "Female"
-                      : "Other"}
-                  </td>
-                  <th>Contact</th>
-                  <td>{selectedPatient.contact_number}</td>
-                </tr>
-                <tr>
-                  <th>Email</th>
-                  <td>{selectedPatient.email}</td>
-                  <th>Blood Group</th>
-                  <td>{selectedPatient.blood_group || "Not recorded"}</td>
-                </tr>
-                <tr>
-                  <th>Allergies</th>
-                  <td colSpan="3">
-                    {selectedPatient.allergies || "None recorded"}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Conditions</th>
-                  <td colSpan="3">
-                    {selectedPatient.existing_conditions || "No existing conditions"}
-                  </td>
-                </tr>
-                <tr>
-                  <th>Status</th>
-                  <td colSpan="3">
-                    <span
-                      className={`status-badge ${selectedPatient.status.toLowerCase()}`}
-                    >
-                      {selectedPatient.status === "NEW"
-                        ? "New Patient"
-                        : selectedPatient.status === "ONGOING"
-                        ? "Ongoing Treatment"
-                        : selectedPatient.status === "COMPLETED"
-                        ? "Treatment Completed"
-                        : "Follow-up Required"}
-                    </span>
-                  </td>
-                </tr>
-
-                {/* New rows for prescription history from most recent prescription */}
-                {selectedPatient.prescriptions &&
-                  selectedPatient.prescriptions.length > 0 && (
-                    <>
-                      <tr>
-                        <th>Latest Prescription</th>
-                        <td colSpan="3">
-                          {selectedPatient.prescriptions[0].prescription ||
-                            "No prescription details"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Work Done</th>
-                        <td colSpan="3">
-                          {selectedPatient.prescriptions[0].work_done ||
-                            "No work recorded"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Pending Work</th>
-                        <td colSpan="3">
-                          {selectedPatient.prescriptions[0].pending_work ||
-                            "No pending work"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th>Post-Treatment</th>
-                        <td colSpan="3">
-                          {selectedPatient.prescriptions[0].post_medication ||
-                            "No post-treatment medication"}
-                        </td>
-                      </tr>
-                    </>
-                  )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Medical history section */}
-          {medicalHistories.length > 0 && (
-            <div className="medical-history-section">
-              <h2>Medical History</h2>
-              <div className="history-cards">
-                {medicalHistories.map((history, index) => (
-                  <div key={index} className="history-card">
-                    <div className="card-header">
-                      <span className="date">
-                        {new Date(history.diagnosis_date).toLocaleDateString()}
+          <div className="info-prescription-container">
+            {/* Personal Information */}
+            <div className="personal-info">
+              <h2>Personal Information</h2>
+              <table className="patient-table">
+                <tbody>
+                  <tr>
+                    <th>Name</th>
+                    <td>
+                      {selectedPatient.first_name} {selectedPatient.last_name}
+                    </td>
+                    <th>Age</th>
+                    <td>{selectedPatient.age}</td>
+                  </tr>
+                  <tr>
+                    <th>Gender</th>
+                    <td>
+                      {selectedPatient.gender === "M"
+                        ? "Male"
+                        : selectedPatient.gender === "F"
+                        ? "Female"
+                        : "Other"}
+                    </td>
+                    <th>Contact</th>
+                    <td>{selectedPatient.contact_number}</td>
+                  </tr>
+                  <tr>
+                    <th>Blood Group</th>
+                    <td colSpan="3">{selectedPatient.blood_group || "Not recorded"}</td>
+                  </tr>
+                  <tr>
+                  </tr>
+                  <tr>
+                    <th>Conditions</th>
+                    <td colSpan="3">
+                      {selectedPatient.existing_conditions || "No existing conditions"}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Status</th>
+                    <td colSpan="3">
+                      <span
+                        className={`status-badge ${selectedPatient.status.toLowerCase()}`}
+                      >
+                        {selectedPatient.status === "NEW"
+                          ? "New Patient"
+                          : selectedPatient.status === "ONGOING"
+                          ? "Ongoing Treatment"
+                          : selectedPatient.status === "COMPLETED"
+                          ? "Treatment Completed"
+                          : "Follow-up Required"}
                       </span>
-                    </div>
-                    <div className="card-body">
-                      <p>
-                        <strong>Condition:</strong> {history.condition}
-                      </p>
-                      <p>
-                        <strong>Treatment:</strong> {history.treatment}
-                      </p>
-                      {history.notes && (
-                        <p>
-                          <strong>Notes:</strong> {history.notes}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                    </td>
+                  </tr>
 
-          {/* Prescription history section */}
-          {selectedPatient.prescriptions &&
-            selectedPatient.prescriptions.length > 0 && (
-              <div className="prescription-history-section">
+                  {/* New rows for prescription history from most recent prescription */}
+                  {selectedPatient.prescriptions &&
+                    selectedPatient.prescriptions.length > 0 && (
+                      <>
+                        <tr>
+                          <th>Latest Prescription</th>
+                          <td colSpan="3">
+                            {selectedPatient.prescriptions[0].prescription ||
+                              "No prescription details"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Work Done</th>
+                          <td colSpan="3">
+                            {selectedPatient.prescriptions[0].work_done ||
+                              "No work recorded"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Pending Work</th>
+                          <td colSpan="3">
+                            {selectedPatient.prescriptions[0].pending_work ||
+                              "No pending work"}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Post-Treatment</th>
+                          <td colSpan="3">
+                            {selectedPatient.prescriptions[0].post_medication ||
+                              "No post-treatment medication"}
+                          </td>
+                        </tr>
+                      </>
+                    )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Prescription History - moved to the right */}
+            {selectedPatient.prescriptions && selectedPatient.prescriptions.length > 0 && (
+              <div className="prescription-history-sidebar">
                 <h2>Prescription History</h2>
-                <div className="prescription-cards">
+                <div className="prescription-scroll-container">
                   {selectedPatient.prescriptions.map((prescription, index) => (
                     <div key={index} className="prescription-card">
                       <div className="card-header">
@@ -462,6 +447,38 @@ const PatientDetails = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Medical history section */}
+          {medicalHistories.length > 0 && (
+            <div className="medical-history-section">
+              <h2>Medical History</h2>
+              <div className="history-cards">
+                {medicalHistories.map((history, index) => (
+                  <div key={index} className="history-card">
+                    <div className="card-header">
+                      <span className="date">
+                        {new Date(history.diagnosis_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="card-body">
+                      <p>
+                        <strong>Condition:</strong> {history.condition}
+                      </p>
+                      <p>
+                        <strong>Treatment:</strong> {history.treatment}
+                      </p>
+                      {history.notes && (
+                        <p>
+                          <strong>Notes:</strong> {history.notes}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Dental chart */}
           <div className="dental-chart">
@@ -480,19 +497,19 @@ const PatientDetails = () => {
                       onClick={() => handleToothClick(index)}
                     >
                       <img src="/teeth.png" alt={`Tooth ${index + 1}`} />
-                      <span className="tooth-number">{index + 1}</span>
+                      {/* <span className="tooth-number">{index + 1}</span> */}
                     </div>
                   ))}
                   {/* Left to Right (9-16) */}
-                  {[8, 9, 10, 11, 12, 13, 14, 15].map((index) => (
+                  {[15, 14, 13, 12, 11, 10, 9, 8].map((index) => (
                     <div
                       key={index}
                       className={`tooth ${teethStatus[index]}`}
-                      data-number={index + 1}
+                      data-number={15 - index + 1}
                       onClick={() => handleToothClick(index)}
                     >
                       <img src="/teeth.png" alt={`Tooth ${index + 1}`} />
-                      <span className="tooth-number">{index + 1}</span>
+                      {/* <span className="tooth-number">{index + 1}</span> */}
                     </div>
                   ))}
                 </div>
@@ -506,11 +523,11 @@ const PatientDetails = () => {
                     <div
                       key={index}
                       className={`tooth ${teethStatus[index]}`}
-                      data-number={index + 1}
+                      data-number={32 - index + 1}
                       onClick={() => handleToothClick(index)}
                     >
                       <img src="/teeth.png" alt={`Tooth ${index + 1}`} />
-                      <span className="tooth-number">{index + 1}</span>
+                      {/* <span className="tooth-number">{index + 1}</span> */}
                     </div>
                   ))}
                   {/* Left to Right (25-32) */}
@@ -522,7 +539,7 @@ const PatientDetails = () => {
                       onClick={() => handleToothClick(index)}
                     >
                       <img src="/teeth.png" alt={`Tooth ${index + 1}`} />
-                      <span className="tooth-number">{index + 1}</span>
+                      {/* <span className="tooth-number">{index + 1}</span> */}
                     </div>
                   ))}
                 </div>

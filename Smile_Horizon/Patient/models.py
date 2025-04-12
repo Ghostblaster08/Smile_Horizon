@@ -26,7 +26,6 @@ class Patient(models.Model):
     email = models.EmailField(blank=True)
     address = models.TextField(blank=True)
     blood_group = models.CharField(max_length=5, blank=True)
-    allergies = models.TextField(blank=True)
     existing_conditions = models.TextField(blank=True, verbose_name='Existing Medical Conditions')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='NEW')
     last_visit = models.DateField(null=True, blank=True)
@@ -76,19 +75,19 @@ class Medication(models.Model):
     class Meta:
         ordering = ['-prescribed_date']
 
-class Document(models.Model):
-    """
-    Model to store patient documents (reports, x-rays, etc.)
-    """
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='documents')
-    title = models.CharField(max_length=200)
-    file = models.FileField(upload_to='patient_documents/')
-    document_type = models.CharField(max_length=50)  # X-ray, Report, etc.
-    upload_date = models.DateTimeField(auto_now_add=True)
-    notes = models.TextField(blank=True)
+# class Document(models.Model):
+#     """
+#     Model to store patient documents (reports, x-rays, etc.)
+#     """
+#     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='documents')
+#     title = models.CharField(max_length=200)
+#     file = models.FileField(upload_to='patient_documents/')
+#     document_type = models.CharField(max_length=50)  # X-ray, Report, etc.
+#     upload_date = models.DateTimeField(auto_now_add=True)
+#     notes = models.TextField(blank=True)
     
-    def __str__(self):
-        return self.title
+#     def __str__(self):
+#         return self.title
     
 class TeethStatus(models.Model):
     """

@@ -51,7 +51,7 @@ class PatientSerializer(serializers.ModelSerializer):
         model = Patient
         fields = [
             'id', 'first_name', 'last_name', 'age', 'gender', 'contact_number',
-            'email', 'address', 'blood_group', 'allergies', 'existing_conditions',
+            'email', 'address', 'blood_group', 'existing_conditions',
             'status', 'last_visit', 'created_at', 'updated_at'
         ]
         extra_kwargs = {
@@ -73,7 +73,7 @@ class PatientDetailSerializer(serializers.ModelSerializer):
         model = Patient
         fields = [
             'id', 'first_name', 'last_name', 'age', 'gender', 'contact_number',
-            'email', 'address', 'blood_group', 'allergies', 'existing_conditions',
+            'email', 'address', 'blood_group', 'existing_conditions',
             'status', 'last_visit', 'created_at', 'updated_at',
             'medical_histories', 'medications', 'documents', 'teeth_status'
         ]
